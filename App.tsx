@@ -481,7 +481,7 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-indigo-50/30 dark:from-slate-950 dark:to-slate-900 pb-20 transition-colors duration-300 ease-in-out text-slate-900 dark:text-slate-100">
+    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-indigo-50/30 dark:from-slate-950 dark:to-slate-900 pb-28 md:pb-20 overflow-x-hidden transition-colors duration-300 ease-in-out text-slate-900 dark:text-slate-100">
       <SavedWordsModal 
         isOpen={isSavedModalOpen} 
         onClose={() => setIsSavedModalOpen(false)} 
@@ -519,38 +519,38 @@ const App: React.FC = () => {
         </div>
       )}
 
-      <nav className="sticky top-0 z-40 bg-white/85 dark:bg-slate-900/85 backdrop-blur-md border-b border-slate-200/80 dark:border-slate-800 transition-colors duration-300">
-        <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between gap-2 sm:gap-4">
+      <nav className="sticky top-0 z-40 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border-b border-slate-200/80 dark:border-slate-800 transition-colors duration-300">
+        <div className="max-w-7xl mx-auto px-3 sm:px-4 h-14 sm:h-16 flex items-center justify-between gap-2 sm:gap-4">
           {/* ZONE 1: BRAND & LOGO (LEFT) */}
-          <div className="flex items-center gap-2.5 shrink-0">
-            <div className="bg-gradient-to-tr from-indigo-600 to-violet-600 p-2 rounded-xl shadow-md shadow-indigo-500/20 text-white">
-              <Sparkles className="w-5 h-5" />
+          <div className="flex items-center gap-2 sm:gap-2.5 shrink-0">
+            <div className="bg-gradient-to-tr from-indigo-600 to-violet-600 p-1.5 sm:p-2 rounded-xl shadow-md shadow-indigo-500/20 text-white">
+              <Sparkles className="w-4 h-4 sm:w-5 sm:h-5" />
             </div>
             <div className="flex flex-col">
-              <div className="flex items-center gap-1.5">
-                <span className="text-lg sm:text-xl font-black bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 via-indigo-500 to-violet-600 dark:from-indigo-400 dark:to-violet-400 leading-tight tracking-tight">
+              <div className="flex items-center gap-1 sm:gap-1.5">
+                <span className="text-base sm:text-xl font-black bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 via-indigo-500 to-violet-600 dark:from-indigo-400 dark:to-violet-400 leading-tight tracking-tight">
                   DeutschBuddy
                 </span>
-                <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300 border border-amber-300/80 dark:border-amber-800/80 tracking-wider">
-                  CEFR B2
+                <span className="px-1.5 py-0.2 sm:px-2 sm:py-0.5 rounded-full text-[9px] sm:text-[10px] font-black bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300 border border-amber-300/80 dark:border-amber-800/80 tracking-wider">
+                  B2
                 </span>
               </div>
-              <span className="text-[10px] text-slate-400 font-medium hidden md:inline leading-none">
+              <span className="text-[10px] text-slate-400 font-medium hidden lg:inline leading-none">
                 {t.brandSubtitle}
               </span>
             </div>
           </div>
 
-          {/* ZONE 2: LEARNING TOOLS ISLAND (CENTER) */}
-          <div className="flex items-center bg-slate-100/90 dark:bg-slate-800/90 p-1 rounded-2xl border border-slate-200/80 dark:border-slate-700/80 shadow-inner">
+          {/* ZONE 2: LEARNING TOOLS ISLAND (CENTER - DESKTOP ONLY) */}
+          <div className="hidden md:flex items-center bg-slate-100/90 dark:bg-slate-800/90 p-1 rounded-2xl border border-slate-200/80 dark:border-slate-700/80 shadow-inner">
             {/* Saved Words / Phrases */}
             <button
               onClick={() => setIsSavedModalOpen(true)}
-              className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl text-xs sm:text-sm font-semibold text-slate-700 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-white dark:hover:bg-slate-700/70 transition-all duration-200"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs sm:text-sm font-semibold text-slate-700 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-white dark:hover:bg-slate-700/70 transition-all duration-200"
               title={t.saved}
             >
               <Bookmark className="w-4 h-4 text-amber-500" />
-              <span className="hidden md:inline">{t.saved}</span>
+              <span>{t.saved}</span>
               {(savedWords.length + savedPhrases.length > 0) && (
                 <span className="px-1.5 py-0.5 text-[10px] font-black rounded-full bg-amber-100 dark:bg-amber-950 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-900/40">
                   {savedWords.length + savedPhrases.length}
@@ -561,11 +561,11 @@ const App: React.FC = () => {
             {/* B2 Progress Dashboard */}
             <button
               onClick={() => setIsProgressOpen(true)}
-              className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl text-xs sm:text-sm font-semibold text-slate-700 dark:text-slate-300 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-white dark:hover:bg-slate-700/70 transition-all duration-200"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs sm:text-sm font-semibold text-slate-700 dark:text-slate-300 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-white dark:hover:bg-slate-700/70 transition-all duration-200"
               title={t.progressTitle}
             >
               <TrendingUp className="w-4 h-4 text-emerald-500" />
-              <span className="hidden md:inline">{t.progress}</span>
+              <span>{t.progress}</span>
               <span className="px-1.5 py-0.5 text-[9px] font-black uppercase rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-900/40">
                 B2
               </span>
@@ -574,46 +574,32 @@ const App: React.FC = () => {
             {/* Analysis History */}
             <button
               onClick={() => setIsHistoryOpen(true)}
-              className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl text-xs sm:text-sm font-semibold text-slate-700 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-white dark:hover:bg-slate-700/70 transition-all duration-200"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs sm:text-sm font-semibold text-slate-700 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-white dark:hover:bg-slate-700/70 transition-all duration-200"
               title={t.history}
             >
               <History className="w-4 h-4 text-indigo-500" />
-              <span className="hidden md:inline">{t.history}</span>
+              <span>{t.history}</span>
               {historyList.length > 0 && (
                 <span className="px-1.5 py-0.5 text-[10px] font-black rounded-full bg-indigo-100 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-900/40">
                   {historyList.length}
                 </span>
               )}
             </button>
-
-            {/* Live Audio / Voice Practice */}
-            <button
-              onClick={() => setIsLiveOpen(!isLiveOpen)}
-              className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl text-xs sm:text-sm font-semibold transition-all duration-200 ${
-                isLiveOpen
-                  ? 'bg-indigo-600 text-white shadow-sm'
-                  : 'text-slate-700 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-white dark:hover:bg-slate-700/70'
-              }`}
-              title={t.liveSpeaking}
-            >
-              <MessageSquare className={`w-4 h-4 ${isLiveOpen ? 'text-white' : 'text-indigo-500'}`} />
-              <span className="hidden lg:inline">{t.liveSpeaking}</span>
-            </button>
           </div>
 
-          {/* ZONE 3: UTILITIES & AUTH (RIGHT) */}
-          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+          {/* ZONE 3: UTILITIES & AUTH (RIGHT - ADAPTS CLEANLY TO MOBILE) */}
+          <div className="flex items-center gap-1 sm:gap-2 shrink-0">
             {/* Segmented Language Switcher */}
             <div className="flex items-center bg-slate-100/90 dark:bg-slate-800/90 p-0.5 sm:p-1 rounded-xl border border-slate-200/80 dark:border-slate-700/80">
               <button
                 type="button"
                 onClick={() => handleLanguageChange('uz')}
-                className={`flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-bold transition-all ${
+                className={`flex items-center gap-1 px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-lg text-xs font-bold transition-all ${
                   language === 'uz'
                     ? 'bg-indigo-600 text-white shadow-sm'
                     : 'text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400'
                 }`}
-                title="O'zbek tiliga o'tish"
+                title="O'zbek tili"
               >
                 <span>🇺🇿</span>
                 <span className="hidden sm:inline">UZ</span>
@@ -621,12 +607,12 @@ const App: React.FC = () => {
               <button
                 type="button"
                 onClick={() => handleLanguageChange('en')}
-                className={`flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-bold transition-all ${
+                className={`flex items-center gap-1 px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-lg text-xs font-bold transition-all ${
                   language === 'en'
                     ? 'bg-indigo-600 text-white shadow-sm'
                     : 'text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400'
                 }`}
-                title="Switch to English"
+                title="English"
               >
                 <span>🇬🇧</span>
                 <span className="hidden sm:inline">EN</span>
@@ -637,7 +623,7 @@ const App: React.FC = () => {
             <div className="flex items-center">
               <button
                 onClick={toggleFullscreen}
-                className="p-1.5 sm:p-2 text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors"
+                className="hidden sm:flex p-1.5 sm:p-2 text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors"
                 title={isFullscreen ? t.fullscreenExit : t.fullscreenEnter}
               >
                 {isFullscreen ? <Minimize className="w-4 h-4" /> : <Maximize className="w-4 h-4" />}
@@ -653,9 +639,9 @@ const App: React.FC = () => {
 
             {/* Google Authentication & Firestore Sync */}
             {currentUser ? (
-              <div className="flex items-center gap-1.5 pl-1.5 border-l border-slate-200 dark:border-slate-800">
+              <div className="flex items-center gap-1 sm:gap-1.5 pl-1 sm:pl-1.5 border-l border-slate-200 dark:border-slate-800">
                 <div
-                  className="flex items-center gap-2 p-1 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800/60 transition-colors"
+                  className="flex items-center gap-1.5 p-0.5 sm:p-1 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800/60 transition-colors"
                   title={`Signed in as ${currentUser.email} • Synced to Cloud Firestore`}
                 >
                   {currentUser.photoURL ? (
@@ -680,7 +666,7 @@ const App: React.FC = () => {
                 </div>
                 <button
                   onClick={handleSignOut}
-                  className="p-1.5 sm:p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-xl transition-colors"
+                  className="p-1 sm:p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-xl transition-colors"
                   title={t.signOut}
                 >
                   <LogOut className="w-4 h-4" />
@@ -690,7 +676,7 @@ const App: React.FC = () => {
               <button
                 onClick={handleGoogleSignIn}
                 disabled={isAuthLoading}
-                className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white rounded-xl text-xs sm:text-sm font-bold shadow-sm transition-all active:scale-95"
+                className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1 sm:py-1.5 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white rounded-xl text-xs sm:text-sm font-bold shadow-sm transition-all active:scale-95"
                 title="Google login"
               >
                 <svg className="w-3.5 h-3.5" viewBox="0 0 24 24">
@@ -706,27 +692,73 @@ const App: React.FC = () => {
         </div>
       </nav>
 
-      <main className="max-w-6xl mx-auto px-4 py-8">
+      {/* MOBILE BOTTOM NAVIGATION DOCK */}
+      <div className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-slate-900/95 backdrop-blur-lg border-t border-slate-200 dark:border-slate-800 px-4 py-2 flex items-center justify-around shadow-2xl">
+        <button
+          onClick={() => setIsSavedModalOpen(true)}
+          className="flex flex-col items-center gap-0.5 py-1 px-3 text-slate-600 dark:text-slate-300 active:scale-95 transition-all"
+        >
+          <div className="relative">
+            <Bookmark className="w-5 h-5 text-amber-500" />
+            {(savedWords.length + savedPhrases.length > 0) && (
+              <span className="absolute -top-1.5 -right-3 px-1 min-w-[16px] h-4 text-[9px] font-black rounded-full bg-amber-500 text-white flex items-center justify-center shadow-sm">
+                {savedWords.length + savedPhrases.length}
+              </span>
+            )}
+          </div>
+          <span className="text-[10px] font-bold text-slate-700 dark:text-slate-300">{t.saved}</span>
+        </button>
+
+        <button
+          onClick={() => setIsProgressOpen(true)}
+          className="flex flex-col items-center gap-0.5 py-1 px-3 text-slate-600 dark:text-slate-300 active:scale-95 transition-all"
+        >
+          <div className="relative">
+            <TrendingUp className="w-5 h-5 text-emerald-500" />
+            <span className="absolute -top-1.5 -right-2.5 px-1 text-[8px] font-black rounded-full bg-emerald-500 text-white shadow-sm">
+              B2
+            </span>
+          </div>
+          <span className="text-[10px] font-bold text-slate-700 dark:text-slate-300">{t.progress}</span>
+        </button>
+
+        <button
+          onClick={() => setIsHistoryOpen(true)}
+          className="flex flex-col items-center gap-0.5 py-1 px-3 text-slate-600 dark:text-slate-300 active:scale-95 transition-all"
+        >
+          <div className="relative">
+            <History className="w-5 h-5 text-indigo-500" />
+            {historyList.length > 0 && (
+              <span className="absolute -top-1.5 -right-3 px-1 min-w-[16px] h-4 text-[9px] font-black rounded-full bg-indigo-500 text-white flex items-center justify-center shadow-sm">
+                {historyList.length}
+              </span>
+            )}
+          </div>
+          <span className="text-[10px] font-bold text-slate-700 dark:text-slate-300">{t.history}</span>
+        </button>
+      </div>
+
+      <main className="max-w-6xl mx-auto px-3 sm:px-4 py-4 sm:py-8">
         <section className="mb-12">
-          <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 shadow-xl border border-slate-200 dark:border-slate-800 transition-colors duration-300">
-            <div className="flex items-center justify-between mb-4">
-              <label className="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                <BookOpen className="w-4 h-4" /> {t.analysisTitle}
+          <div className="bg-white dark:bg-slate-900 rounded-3xl p-4 sm:p-6 shadow-xl border border-slate-200 dark:border-slate-800 transition-colors duration-300">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+              <label className="text-xs sm:text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                <BookOpen className="w-4 h-4 text-indigo-500" /> {t.analysisTitle}
               </label>
-              <div className="flex gap-4">
+              <div className="flex items-center gap-3 self-end sm:self-auto">
                 <label className="flex items-center gap-2 cursor-pointer group">
                   <div className="relative">
                     <input type="checkbox" checked={useSearch} onChange={() => setUseSearch(!useSearch)} className="sr-only" />
-                    <div className={`w-10 h-5 rounded-full transition-colors ${useSearch ? 'bg-indigo-600' : 'bg-slate-300 dark:bg-slate-700'}`} />
-                    <div className={`absolute top-1 left-1 w-3 h-3 bg-white rounded-full transition-transform ${useSearch ? 'translate-x-5' : ''}`} />
+                    <div className={`w-9 sm:w-10 h-5 rounded-full transition-colors ${useSearch ? 'bg-indigo-600' : 'bg-slate-300 dark:bg-slate-700'}`} />
+                    <div className={`absolute top-1 left-1 w-3 h-3 bg-white rounded-full transition-transform ${useSearch ? 'translate-x-4 sm:translate-x-5' : ''}`} />
                   </div>
                   <span className="text-xs font-bold text-slate-600 dark:text-slate-400 group-hover:text-indigo-600 transition-colors">{t.searchToggle}</span>
                 </label>
                 <label className="flex items-center gap-2 cursor-pointer group">
                   <div className="relative">
                     <input type="checkbox" checked={useThinking} onChange={() => setUseThinking(!useThinking)} className="sr-only" />
-                    <div className={`w-10 h-5 rounded-full transition-colors ${useThinking ? 'bg-violet-600' : 'bg-slate-300 dark:bg-slate-700'}`} />
-                    <div className={`absolute top-1 left-1 w-3 h-3 bg-white rounded-full transition-transform ${useThinking ? 'translate-x-5' : ''}`} />
+                    <div className={`w-9 sm:w-10 h-5 rounded-full transition-colors ${useThinking ? 'bg-violet-600' : 'bg-slate-300 dark:bg-slate-700'}`} />
+                    <div className={`absolute top-1 left-1 w-3 h-3 bg-white rounded-full transition-transform ${useThinking ? 'translate-x-4 sm:translate-x-5' : ''}`} />
                   </div>
                   <span className="text-xs font-bold text-slate-600 dark:text-slate-400 group-hover:text-violet-600 transition-colors">{t.thinkingToggle}</span>
                 </label>
@@ -737,16 +769,16 @@ const App: React.FC = () => {
               onChange={(e) => setInputText(e.target.value)}
               onKeyDown={handleKeyDown}
               placeholder={t.placeholder}
-              className="w-full h-32 bg-transparent text-xl text-slate-900 dark:text-slate-100 placeholder:text-slate-300 dark:placeholder:text-slate-700 resize-none focus:outline-none transition-colors duration-300"
+              className="w-full h-32 bg-transparent text-base sm:text-xl text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-600 resize-none focus:outline-none transition-colors duration-300"
             />
 
-            <div className="flex items-center justify-between pt-4 border-t border-slate-100 dark:border-slate-800">
-              <p className="text-xs text-slate-400">{t.ctrlEnterHint}</p>
+            <div className="flex flex-col-reverse sm:flex-row sm:items-center justify-between gap-3 pt-4 border-t border-slate-100 dark:border-slate-800">
+              <p className="text-xs text-slate-400 text-center sm:text-left">{t.ctrlEnterHint}</p>
               <button
                 type="button"
                 onClick={() => handleAnalyze()}
                 disabled={status === AnalysisStatus.LOADING || !inputText.trim()}
-                className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-300 dark:disabled:bg-slate-800 disabled:opacity-60 disabled:cursor-not-allowed text-white px-8 py-3 rounded-2xl font-bold transition-all active:scale-95 shadow-md shadow-indigo-600/20"
+                className="w-full sm:w-auto justify-center flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-300 dark:disabled:bg-slate-800 disabled:opacity-60 disabled:cursor-not-allowed text-white px-6 sm:px-8 py-3 rounded-2xl font-bold transition-all active:scale-95 shadow-md shadow-indigo-600/20"
               >
                 {status === AnalysisStatus.LOADING ? <Loader2 className="w-5 h-5 animate-spin" /> : <Sparkles className="w-5 h-5" />}
                 {status === AnalysisStatus.LOADING ? t.analyzing : t.analyzeButton}
