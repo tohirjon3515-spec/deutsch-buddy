@@ -1,0 +1,124 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // 1. Global Safety Net: Default deny everything
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Helper functions
+    function isValidId(id) {
+      return id is string && id.size() > 0 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    // Entity validation functions
+    function isValidUser(data) {
+      return data.keys().hasAll(['uid', 'email']) &&
+        data.keys().hasOnly(['uid', 'email', 'displayName', 'photoURL', 'createdAt', 'updatedAt']) &&
+        data.uid is string && data.uid.size() > 0 && data.uid.size() <= 128 &&
+        data.email is string && data.email.size() <= 256 &&
+        (!('displayName' in data) || (data.displayName is string && data.displayName.size() <= 200)) &&
+        (!('photoURL' in data) || (data.photoURL is string && data.photoURL.size() <= 2048)) &&
+        (!('createdAt' in data) || (data.createdAt is string && data.createdAt.size() <= 64)) &&
+        (!('updatedAt' in data) || (data.updatedAt is string && data.updatedAt.size() <= 64));
+    }
+
+    function isValidSavedWord(data, userId) {
+      return data.keys().hasAll(['id', 'userId', 'word', 'type', 'grammarForms', 'meaning']) &&
+        data.keys().hasOnly(['id', 'userId', 'word', 'type', 'grammarForms', 'meaning', 'contextSentence', 'difficulty', 'createdAt', 'updatedAt']) &&
+        data.id is string && data.id.size() > 0 && data.id.size() <= 128 &&
+        data.userId == userId && data.userId == request.auth.uid &&
+        data.word is string && data.word.size() > 0 && data.word.size() <= 120 &&
+        data.type is string && data.type.size() > 0 && data.type.size() <= 60 &&
+        data.grammarForms is string && data.grammarForms.size() <= 200 &&
+        data.meaning is string && data.meaning.size() > 0 && data.meaning.size() <= 300 &&
+        (!('contextSentence' in data) || (data.contextSentence is string && data.contextSentence.size() <= 500)) &&
+        (!('difficulty' in data) || (data.difficulty in ['easy', 'hard'])) &&
+        (!('createdAt' in data) || (data.createdAt is string && data.createdAt.size() <= 64)) &&
+        (!('updatedAt' in data) || (data.updatedAt is string && data.updatedAt.size() <= 64));
+    }
+
+    function isValidSavedPhrase(data, userId) {
+      return data.keys().hasAll(['id', 'userId', 'phrase', 'literalTranslation', 'actualMeaning', 'explanation', 'exampleSentence']) &&
+        data.keys().hasOnly(['id', 'userId', 'phrase', 'literalTranslation', 'actualMeaning', 'explanation', 'exampleSentence', 'difficulty', 'createdAt', 'updatedAt']) &&
+        data.id is string && data.id.size() > 0 && data.id.size() <= 128 &&
+        data.userId == userId && data.userId == request.auth.uid &&
+        data.phrase is string && data.phrase.size() > 0 && data.phrase.size() <= 200 &&
+        data.literalTranslation is string && data.literalTranslation.size() <= 300 &&
+        data.actualMeaning is string && data.actualMeaning.size() <= 300 &&
+        data.explanation is string && data.explanation.size() <= 500 &&
+        data.exampleSentence is string && data.exampleSentence.size() <= 500 &&
+        (!('difficulty' in data) || (data.difficulty in ['Common', 'Intermediate', 'Advanced'])) &&
+        (!('createdAt' in data) || (data.createdAt is string && data.createdAt.size() <= 64)) &&
+        (!('updatedAt' in data) || (data.updatedAt is string && data.updatedAt.size() <= 64));
+    }
+
+    function isValidHistory(data, userId) {
+      return data.keys().hasAll(['id', 'userId', 'text', 'mode', 'translation']) &&
+        data.keys().hasOnly(['id', 'userId', 'text', 'mode', 'translation', 'createdAt', 'grammarTopic', 'detectedStructures', 'vocabCount']) &&
+        data.id is string && data.id.size() > 0 && data.id.size() <= 128 &&
+        data.userId == userId && data.userId == request.auth.uid &&
+        data.text is string && data.text.size() > 0 && data.text.size() <= 4000 &&
+        data.mode in ['sentence', 'paragraph'] &&
+        data.translation is string && data.translation.size() <= 4000 &&
+        (!('createdAt' in data) || (data.createdAt is string && data.createdAt.size() <= 64)) &&
+        (!('grammarTopic' in data) || (data.grammarTopic is string && data.grammarTopic.size() <= 200)) &&
+        (!('detectedStructures' in data) || (data.detectedStructures is list && data.detectedStructures.size() <= 20)) &&
+        (!('vocabCount' in data) || (data.vocabCount is number && data.vocabCount >= 0 && data.vocabCount <= 200));
+    }
+
+    // 2. User Profiles
+    match /users/{userId} {
+      allow get: if isOwner(userId);
+      allow list: if false;
+      allow create: if isOwner(userId) && isValidUser(incoming()) && incoming().uid == userId;
+      allow update: if isOwner(userId) && isValidUser(incoming()) && incoming().uid == existing().uid &&
+                    incoming().diff(existing()).affectedKeys().hasOnly(['displayName', 'photoURL', 'updatedAt']);
+      allow delete: if false;
+
+      // 3. User Saved Words subcollection
+      match /savedWords/{wordId} {
+        allow get, list: if isOwner(userId);
+        allow create: if isOwner(userId) && isValidSavedWord(incoming(), userId);
+        allow update: if isOwner(userId) && isValidSavedWord(incoming(), userId) &&
+                      incoming().userId == existing().userId && incoming().id == existing().id &&
+                      incoming().diff(existing()).affectedKeys().hasOnly(['word', 'type', 'grammarForms', 'meaning', 'contextSentence', 'difficulty', 'updatedAt']);
+        allow delete: if isOwner(userId);
+      }
+
+      // 4. User Saved Phrases subcollection
+      match /savedPhrases/{phraseId} {
+        allow get, list: if isOwner(userId);
+        allow create: if isOwner(userId) && isValidSavedPhrase(incoming(), userId);
+        allow update: if isOwner(userId) && isValidSavedPhrase(incoming(), userId) &&
+                      incoming().userId == existing().userId && incoming().id == existing().id &&
+                      incoming().diff(existing()).affectedKeys().hasOnly(['phrase', 'literalTranslation', 'actualMeaning', 'explanation', 'exampleSentence', 'difficulty', 'updatedAt']);
+        allow delete: if isOwner(userId);
+      }
+
+      // 5. User Text Analysis History subcollection
+      match /history/{historyId} {
+        allow get, list: if isOwner(userId);
+        allow create: if isOwner(userId) && isValidHistory(incoming(), userId);
+        allow update: if false;
+        allow delete: if isOwner(userId);
+      }
+    }
+  }
+}

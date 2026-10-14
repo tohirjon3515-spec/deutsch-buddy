@@ -1,0 +1,6 @@
+{
+  "name": "DeutschBuddy",
+  "description": "An interactive German language tutor tailored for CEFR B2 learners (Goethe-Zertifikat & telc B2), analyzing complex text, Nomen-Verb-Verbindungen, passive alternatives, and grammar with Uzbek translations.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

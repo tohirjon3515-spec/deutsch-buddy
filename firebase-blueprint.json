@@ -1,0 +1,227 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "User profile containing identity and preference details",
+      "type": "object",
+      "properties": {
+        "uid": {
+          "type": "string",
+          "description": "User unique identifier from Firebase Auth",
+          "maxLength": 128
+        },
+        "email": {
+          "type": "string",
+          "description": "User email address",
+          "format": "email",
+          "maxLength": 256
+        },
+        "displayName": {
+          "type": "string",
+          "description": "Display name of the user",
+          "maxLength": 120
+        },
+        "photoURL": {
+          "type": "string",
+          "description": "User profile avatar photo URL",
+          "maxLength": 1024
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Creation timestamp"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "Last update timestamp"
+        }
+      },
+      "required": ["uid", "email"]
+    },
+    "SavedWord": {
+      "title": "SavedWord",
+      "description": "Saved German vocabulary item for spaced repetition and study",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the vocabulary item",
+          "maxLength": 128
+        },
+        "userId": {
+          "type": "string",
+          "description": "Owner user ID",
+          "maxLength": 128
+        },
+        "word": {
+          "type": "string",
+          "description": "The German word or term",
+          "maxLength": 120
+        },
+        "type": {
+          "type": "string",
+          "description": "Part of speech (Noun, Verb, Adjective, etc.)",
+          "maxLength": 60
+        },
+        "grammarForms": {
+          "type": "string",
+          "description": "Article, plural, or conjugation forms",
+          "maxLength": 200
+        },
+        "meaning": {
+          "type": "string",
+          "description": "English meaning/translation",
+          "maxLength": 300
+        },
+        "contextSentence": {
+          "type": "string",
+          "description": "German sentence illustrating word usage in context",
+          "maxLength": 500
+        },
+        "difficulty": {
+          "type": "string",
+          "description": "Learning difficulty state",
+          "enum": ["easy", "hard"],
+          "maxLength": 20
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp when saved"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "Timestamp when updated"
+        }
+      },
+      "required": ["id", "userId", "word", "type", "grammarForms", "meaning"]
+    },
+    "SavedPhrase": {
+      "title": "SavedPhrase",
+      "description": "Saved German idiomatic phrase or collocation",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the phrase",
+          "maxLength": 128
+        },
+        "userId": {
+          "type": "string",
+          "description": "Owner user ID",
+          "maxLength": 128
+        },
+        "phrase": {
+          "type": "string",
+          "description": "German phrase or idiom",
+          "maxLength": 200
+        },
+        "literalTranslation": {
+          "type": "string",
+          "description": "Literal word-by-word translation",
+          "maxLength": 300
+        },
+        "actualMeaning": {
+          "type": "string",
+          "description": "Actual idiomatic meaning in English",
+          "maxLength": 300
+        },
+        "explanation": {
+          "type": "string",
+          "description": "Grammatical and cultural explanation",
+          "maxLength": 500
+        },
+        "exampleSentence": {
+          "type": "string",
+          "description": "German example sentence using the phrase",
+          "maxLength": 500
+        },
+        "difficulty": {
+          "type": "string",
+          "description": "Complexity tier",
+          "enum": ["Common", "Intermediate", "Advanced"],
+          "maxLength": 30
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp when saved"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "Timestamp when updated"
+        }
+      },
+      "required": ["id", "userId", "phrase", "literalTranslation", "actualMeaning", "explanation", "exampleSentence"]
+    },
+    "AnalysisHistory": {
+      "title": "AnalysisHistory",
+      "description": "Historical German sentence or paragraph analysis record",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique record identifier",
+          "maxLength": 128
+        },
+        "userId": {
+          "type": "string",
+          "description": "Owner user ID",
+          "maxLength": 128
+        },
+        "text": {
+          "type": "string",
+          "description": "Original analyzed German text",
+          "maxLength": 4000
+        },
+        "mode": {
+          "type": "string",
+          "description": "Analysis mode",
+          "enum": ["sentence", "paragraph"],
+          "maxLength": 20
+        },
+        "translation": {
+          "type": "string",
+          "description": "English translation result",
+          "maxLength": 4000
+        },
+        "grammarTopic": {
+          "type": "string",
+          "description": "Grammar spotlight topic title",
+          "maxLength": 200
+        },
+        "detectedStructures": {
+          "type": "array",
+          "description": "List of detected B2 grammatical structures",
+          "items": {
+            "type": "string"
+          }
+        },
+        "vocabCount": {
+          "type": "number",
+          "description": "Number of vocabulary terms extracted"
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp of analysis"
+        }
+      },
+      "required": ["id", "userId", "text", "mode", "translation"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "User profile information"
+    },
+    "/users/{userId}/savedWords/{wordId}": {
+      "schema": "SavedWord",
+      "description": "User saved German vocabulary items"
+    },
+    "/users/{userId}/savedPhrases/{phraseId}": {
+      "schema": "SavedPhrase",
+      "description": "User saved German idiomatic phrases"
+    },
+    "/users/{userId}/history/{historyId}": {
+      "schema": "AnalysisHistory",
+      "description": "User German text analysis history records"
+    }
+  }
+}
