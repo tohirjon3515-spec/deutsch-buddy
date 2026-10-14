@@ -229,8 +229,8 @@ app.post("/api/analyze", async (req: express.Request, res: express.Response) => 
       return res.status(400).json({ error: "Text cannot be empty" });
     }
 
-    const isUzbek = targetLang !== "en";
-    const cacheKey = `${trimmedText.toLowerCase()}_${isUzbek ? "uz" : "en"}_${Boolean(useSearch)}_${Boolean(useThinking)}`;
+    const lang = targetLang === "ru" ? "ru" : targetLang === "en" ? "en" : "uz";
+    const cacheKey = `${trimmedText.toLowerCase()}_${lang}_${Boolean(useSearch)}_${Boolean(useThinking)}`;
     const cached = analysisCache.get(cacheKey);
     if (cached && Date.now() - cached.timestamp < CACHE_TTL_MS) {
       return res.json(cached.data);
@@ -255,7 +255,48 @@ app.post("/api/analyze", async (req: express.Request, res: express.Response) => 
       config.thinkingConfig = { thinkingBudget: 32768 };
     }
 
-    const prompt = isUzbek
+    const prompt = lang === "ru"
+      ? `
+      As an expert German Language CEFR B2 Tutor for Russian-speaking students (preparing for Goethe-Zertifikat B2 and telc Deutsch B2), perform an exhaustive linguistic and exam-oriented analysis of this German input: "${trimmedText}"
+      
+      CRITICAL INSTRUCTIONS FOR B2 LOCALIZATION IN RUSSIAN:
+      1. All translations, vocabulary meanings, phrase explanations, literal translations, and grammar breakdowns MUST BE IN CLEAR, NATURAL RUSSIAN (Русский язык).
+      2. TARGET CEFR B2 LEVEL:
+         - Identify ALL significant nouns, verbs, and adjectives.
+         - For nouns, always include the definite article (der/die/das) and plural form.
+         - For verbs, indicate fixed prepositions if any (например: "abhängen von + Dat", "achten auf + Akk", "sich freuen auf/über").
+         - 'cefrLevel': estimate level ('B1', 'B2', or 'C1').
+         - 'isNVV': set true if it forms a Nomen-Verb-Verbindung (Funktionsverbgefüge).
+         - 'meaning': Accurate Russian definition.
+         - 'grammarForms': German principal forms (e.g. "hat in Betracht gezogen, NVV", "untersuchte, hat untersucht").
+      3. Extract ALL relevant collocations, idioms, B2 Redemittel, and Nomen-Verb-Verbindungen:
+         - 'phrase': The German collocation.
+         - 'category': Categorize as "Nomen-Verb-Verbindung", "Passiv-Alternative", "Zweiteiliger Konnektor", "B2 Redemittel", or "Feste Präposition".
+         - 'literalTranslation': Дословный русский перевод.
+         - 'actualMeaning': Фактическое / переносное значение на русском языке.
+         - 'explanation': Объяснение на русском языке использования и значения данного выражения.
+         - 'exampleSentence': German B2 example sentence.
+         - 'difficulty': "Intermediate" or "Advanced".
+      4. If the input is a paragraph, provide 'linguisticInsights':
+         - themes: Core subjects described in Russian.
+         - connectors: Logical German linking words and their function explained in Russian.
+         - stylisticNote: Stylistic observation written in Russian.
+      5. b2Highlights:
+         - detectedStructures: Array of key B2 structures found.
+         - goetheExamTip: High-yield advice in RUSSIAN for Goethe-Zertifikat B2 / telc B2 exams explaining how students can apply these structures to score higher.
+      6. translation: Natural, idiomatic, clear RUSSIAN translation of the input text.
+      7. grammarSpotlight: Focus on the key B2 German grammar pattern present.
+         - topic: Title in Russian/German.
+         - explanation: Detailed, clear explanation written in RUSSIAN with B2 exam relevance.
+         - examples: Illustrative German examples.
+      8. sentenceChallenge:
+         - target: German B2 sentence from the text.
+         - shuffled: Shuffled words of the German sentence.
+         - translation: RUSSIAN translation of this sentence.
+      
+      Ensure the output is high-quality, pedagogically clear in Russian, and directly helps Russian-speaking students pass the B2 German exam.
+    `
+      : lang === "uz"
       ? `
       As an expert German Language CEFR B2 Tutor for Uzbek students (preparing for Goethe-Zertifikat B2 and telc Deutsch B2), perform an exhaustive linguistic and exam-oriented analysis of this German input: "${trimmedText}"
       
@@ -402,8 +443,11 @@ app.post("/api/import-magic", async (req: express.Request, res: express.Response
       return res.status(400).json({ error: "Raw text is required" });
     }
 
-    const isUzbek = targetLang !== "en";
-    const contents = isUzbek
+    const importLang = targetLang === "ru" ? "ru" : targetLang === "en" ? "en" : "uz";
+    const contents = importLang === "ru"
+      ? `Transform this list into valid German B1 Vocabulary objects: "${rawText}". 
+      For each word, find: word, type (Noun/Verb/Adj), grammarForms (e.g., der Tisch, -e), meaning (in natural Russian, e.g., "стол", "писать", "красивый"), and a short German context sentence.`
+      : importLang === "uz"
       ? `Transform this list into valid German B1 Vocabulary objects: "${rawText}". 
       For each word, find: word, type (Noun/Verb/Adj), grammarForms (e.g., der Tisch, -e), meaning (in natural Uzbek, e.g., "stol", "yozmoq", "chiroyli"), and a short German context sentence.`
       : `Transform this list into valid German B1 Vocabulary objects: "${rawText}". 

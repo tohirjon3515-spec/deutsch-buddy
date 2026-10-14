@@ -5,7 +5,7 @@ export const analyzeGermanText = async (
   text: string, 
   useSearch: boolean = false, 
   useDeepThinking: boolean = false,
-  targetLang: 'uz' | 'en' = 'uz'
+  targetLang: 'uz' | 'en' | 'ru' = 'uz'
 ): Promise<AnalysisResult> => {
   const response = await fetch("/api/analyze", {
     method: "POST",
@@ -50,7 +50,7 @@ export const generateSpeech = async (text: string): Promise<string> => {
 // 3. Vocabulary Import Magic (Proxied to backend)
 export const importVocabularyMagic = async (
   rawText: string,
-  targetLang: 'uz' | 'en' = 'uz'
+  targetLang: 'uz' | 'en' | 'ru' = 'uz'
 ): Promise<VocabItem[]> => {
   const response = await fetch("/api/import-magic", {
     method: "POST",

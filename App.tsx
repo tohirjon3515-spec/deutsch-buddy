@@ -69,7 +69,7 @@ const App: React.FC = () => {
   const [language, setLanguage] = useState<Language>(() => {
     try {
       const saved = localStorage.getItem('deutschbuddy_lang');
-      return (saved === 'en' || saved === 'uz') ? saved : 'uz';
+      return (saved === 'en' || saved === 'uz' || saved === 'ru') ? saved as Language : 'uz';
     } catch {
       return 'uz';
     }
@@ -378,7 +378,7 @@ const App: React.FC = () => {
 
   const handleAnalyze = async (langOverride?: Language) => {
     if (!inputText.trim()) return;
-    const activeLang: Language = (langOverride === 'en' || langOverride === 'uz')
+    const activeLang: Language = (langOverride === 'en' || langOverride === 'uz' || langOverride === 'ru')
       ? langOverride
       : language;
     stopAudio();
@@ -420,7 +420,7 @@ const App: React.FC = () => {
     } catch (err: any) {
       console.error("Analysis error:", err);
       setError(
-        err?.message || (activeLang === 'uz' ? "Kechirasiz! Matnni tahlil qilib bo'lmadi." : "Entschuldigung! I couldn't analyze that text.")
+        err?.message || (activeLang === 'uz' ? "Kechirasiz! Matnni tahlil qilib bo'lmadi." : activeLang === 'ru' ? "Извините! Не удалось проанализировать текст." : "Entschuldigung! I couldn't analyze that text.")
       );
       setStatus(AnalysisStatus.ERROR);
     }
@@ -611,6 +611,19 @@ const App: React.FC = () => {
               >
                 <span>🇺🇿</span>
                 <span className="hidden sm:inline">UZ</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => handleLanguageChange('ru')}
+                className={`flex items-center gap-1 px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-lg text-xs font-bold transition-all ${
+                  language === 'ru'
+                    ? 'bg-indigo-600 text-white shadow-sm'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400'
+                }`}
+                title="Русский язык"
+              >
+                <span>🇷🇺</span>
+                <span className="hidden sm:inline">RU</span>
               </button>
               <button
                 type="button"

@@ -212,91 +212,117 @@ const SavedWordsModal: React.FC<SavedWordsModalProps> = ({
   };
 
   // ==========================================
-  // PRINT PDF FEATURE (Clean, formatted A4 page)
+  // PRINT PDF FEATURE (Unified cross-tab, A4 Landscape)
   // ==========================================
   const handlePrintPdf = () => {
-    const isWords = activeTab === 'words';
-    const itemsToPrint = isWords
-      ? (selectedWords.size > 0 ? savedWords.filter(w => selectedWords.has(w.word)) : filteredWords)
-      : (selectedPhrases.size > 0 ? savedPhrases.filter(p => selectedPhrases.has(p.phrase)) : filteredPhrases);
+    // Gather words to print: use selection if any, else all filtered words
+    const wordsToPrint = selectedWords.size > 0
+      ? savedWords.filter(w => selectedWords.has(w.word))
+      : (activeTab === 'words' ? filteredWords : []);
 
-    if (itemsToPrint.length === 0) {
-      alert(language === 'uz' ? "Chop etish uchun hech narsa tanlanmagan." : "No items to print.");
+    // Gather phrases to print: use selection if any, else all filtered phrases
+    const phrasesToPrint = selectedPhrases.size > 0
+      ? savedPhrases.filter(p => selectedPhrases.has(p.phrase))
+      : (activeTab === 'phrases' ? filteredPhrases : []);
+
+    if (wordsToPrint.length === 0 && phrasesToPrint.length === 0) {
+      alert(language === 'uz' ? "Chop etish uchun hech narsa tanlanmagan." : language === 'ru' ? "Ничего не выбрано для печати." : "No items to print.");
       return;
     }
 
     const printWindow = window.open('', '_blank');
     if (!printWindow) {
-      alert(language === 'uz' ? "Chop etish uchun brauzerda pop-up oynalarga ruxsat bering." : "Please allow pop-ups to print.");
+      alert(language === 'uz' ? "Chop etish uchun brauzerda pop-up oynalarga ruxsat bering." : language === 'ru' ? "Разрешите всплывающие окна для печати." : "Please allow pop-ups to print.");
       return;
     }
 
-    const title = isWords 
-      ? (language === 'uz' ? "DeutschBuddy - B2 Nemis tili lug'ati" : "DeutschBuddy - German B2 Vocabulary")
-      : (language === 'uz' ? "DeutschBuddy - B2 Nemis tili iboralari" : "DeutschBuddy - German B2 Phrases");
+    const docTitle = language === 'uz'
+      ? "DeutschBuddy - B2 Nemis tili lug'ati"
+      : language === 'ru'
+      ? "DeutschBuddy - Словарь немецкого B2"
+      : "DeutschBuddy - German B2 Study Sheet";
 
-    const dateStr = new Date().toLocaleDateString(language === 'uz' ? 'uz-UZ' : 'en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    });
+    const dateStr = new Date().toLocaleDateString(
+      language === 'uz' ? 'uz-UZ' : language === 'ru' ? 'ru-RU' : 'en-US',
+      { year: 'numeric', month: 'long', day: 'numeric' }
+    );
 
-    const rowsHtml = isWords 
-      ? (itemsToPrint as VocabItem[]).map((w, idx) => `
-        <tr>
-          <td style="text-align: center; width: 36px; color: #94a3b8; font-size: 14px;">☐</td>
-          <td style="width: 25px; text-align: center; color: #94a3b8; font-size: 11px;">${idx + 1}</td>
-          <td style="font-weight: 700; color: #0f172a; font-size: 13px;">${w.word}</td>
-          <td style="width: 80px;"><span style="background: #f1f5f9; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: 600; color: #475569;">${w.type}</span></td>
-          <td style="font-size: 11px; color: #64748b; font-family: monospace;">${w.grammarForms || '-'}</td>
-          <td style="font-weight: 600; color: #4338ca; font-size: 13px;">${w.meaning}</td>
-          <td style="font-size: 11px; color: #475569; font-style: italic;">${w.contextSentence ? `"${w.contextSentence}"` : '-'}</td>
-        </tr>
-      `).join('')
-      : (itemsToPrint as PhraseItem[]).map((p, idx) => `
-        <tr>
-          <td style="text-align: center; width: 36px; color: #94a3b8; font-size: 14px;">☐</td>
-          <td style="width: 25px; text-align: center; color: #94a3b8; font-size: 11px;">${idx + 1}</td>
-          <td style="font-weight: 700; color: #0f172a; font-size: 13px;">${p.phrase}</td>
-          <td style="font-weight: 600; color: #4338ca; font-size: 13px;">${p.actualMeaning}</td>
-          <td style="font-size: 11px; color: #64748b; font-style: italic;">${p.literalTranslation ? `"${p.literalTranslation}"` : '-'}</td>
-          <td style="font-size: 11px; color: #475569;">${p.exampleSentence ? `"${p.exampleSentence}"` : '-'}</td>
-        </tr>
-      `).join('');
+    // ---- WORDS TABLE ----
+    const wordsSection = wordsToPrint.length > 0 ? `
+      <h2 class="section-title">
+        ${language === 'uz' ? "1. B2 Wortschatz — So'zlar" : language === 'ru' ? "1. B2 Wortschatz — Слова" : "1. B2 Vocabulary — Words"}
+        <span class="count-badge">${wordsToPrint.length}</span>
+      </h2>
+      <table>
+        <thead>
+          <tr>
+            <th style="width:30px; text-align:center;">✓</th>
+            <th style="width:22px; text-align:center;">#</th>
+            <th>${language === 'uz' ? "Nemischa so'z" : language === 'ru' ? "Немецкое слово" : "German Word"}</th>
+            <th style="width:70px;">${language === 'uz' ? "Turi" : language === 'ru' ? "Тип" : "Type"}</th>
+            <th>${language === 'uz' ? "Grammatik shakli" : language === 'ru' ? "Грамматика" : "Grammar Forms"}</th>
+            <th>${language === 'uz' ? "Ma'nosi" : language === 'ru' ? "Значение" : "Meaning"}</th>
+            <th>${language === 'uz' ? "Misol" : language === 'ru' ? "Пример" : "Example"}</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${wordsToPrint.map((w, idx) => `
+            <tr>
+              <td style="text-align:center; color:#94a3b8; font-size:13px;">☐</td>
+              <td style="text-align:center; color:#94a3b8; font-size:10px;">${idx + 1}</td>
+              <td style="font-weight:700; color:#0f172a; font-size:12px;">${w.word}</td>
+              <td><span style="background:#f1f5f9; padding:2px 5px; border-radius:4px; font-size:9px; font-weight:600; color:#475569;">${w.type}</span></td>
+              <td style="font-size:10px; color:#64748b; font-family:monospace;">${w.grammarForms || '-'}</td>
+              <td style="font-weight:600; color:#4338ca; font-size:11px;">${w.meaning}</td>
+              <td style="font-size:10px; color:#475569; font-style:italic;">${w.contextSentence ? `"${w.contextSentence}"` : '-'}</td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    ` : '';
 
-    const headersHtml = isWords
-      ? `
-        <tr>
-          <th style="width: 36px; text-align: center;">✓</th>
-          <th style="width: 25px; text-align: center;">#</th>
-          <th>Nemischa so'z</th>
-          <th style="width: 80px;">Turi</th>
-          <th>Grammatik shakli</th>
-          <th>O'zbekcha ma'nosi</th>
-          <th>Misol kontekst</th>
-        </tr>
-      `
-      : `
-        <tr>
-          <th style="width: 36px; text-align: center;">✓</th>
-          <th style="width: 25px; text-align: center;">#</th>
-          <th>Nemischa ibora</th>
-          <th>Asosiy ma'nosi</th>
-          <th>So'zma-so'z tarjimasi</th>
-          <th>Kontekst misol</th>
-        </tr>
-      `;
+    // ---- PHRASES TABLE (no literal translation column) ----
+    const phrasesSection = phrasesToPrint.length > 0 ? `
+      <h2 class="section-title" style="margin-top:${wordsToPrint.length > 0 ? '20px' : '0'};">
+        ${language === 'uz' ? "2. B2 Redemittel — Iboralar" : language === 'ru' ? "2. B2 Redemittel — Фразы" : "2. B2 Redemittel & Phrases"}
+        <span class="count-badge">${phrasesToPrint.length}</span>
+      </h2>
+      <table>
+        <thead>
+          <tr>
+            <th style="width:30px; text-align:center;">✓</th>
+            <th style="width:22px; text-align:center;">#</th>
+            <th>${language === 'uz' ? "Nemischa ibora" : language === 'ru' ? "Немецкая фраза" : "German Phrase"}</th>
+            <th>${language === 'uz' ? "Ma'nosi" : language === 'ru' ? "Значение" : "Meaning"}</th>
+            <th>${language === 'uz' ? "Kontekst misol" : language === 'ru' ? "Пример" : "Example"}</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${phrasesToPrint.map((p, idx) => `
+            <tr>
+              <td style="text-align:center; color:#94a3b8; font-size:13px;">☐</td>
+              <td style="text-align:center; color:#94a3b8; font-size:10px;">${idx + 1}</td>
+              <td style="font-weight:700; color:#0f172a; font-size:12px;">${p.phrase}</td>
+              <td style="font-weight:600; color:#4338ca; font-size:11px;">${p.actualMeaning}</td>
+              <td style="font-size:10px; color:#475569; font-style:italic;">${p.exampleSentence ? `"${p.exampleSentence}"` : '-'}</td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    ` : '';
+
+    const totalItems = wordsToPrint.length + phrasesToPrint.length;
 
     const html = `
       <!DOCTYPE html>
       <html>
         <head>
           <meta charset="utf-8" />
-          <title>${title}</title>
+          <title>${docTitle}</title>
           <style>
             @page {
-              size: A4;
-              margin: 12mm 15mm 15mm 15mm;
+              size: A4 landscape;
+              margin: 10mm 12mm;
             }
             body {
               font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
@@ -312,24 +338,24 @@ const SavedWordsModal: React.FC<SavedWordsModalProps> = ({
               justify-content: space-between;
               align-items: flex-end;
               border-bottom: 2.5px solid #4338ca;
-              padding-bottom: 12px;
-              margin-bottom: 16px;
+              padding-bottom: 10px;
+              margin-bottom: 14px;
             }
             .brand-title {
-              font-size: 20px;
+              font-size: 18px;
               font-weight: 900;
               color: #1e1b4b;
               margin: 0;
             }
             .brand-sub {
-              font-size: 11px;
+              font-size: 10px;
               color: #64748b;
-              margin-top: 3px;
+              margin-top: 2px;
               font-weight: 500;
             }
             .doc-info {
               text-align: right;
-              font-size: 11px;
+              font-size: 10px;
               color: #64748b;
             }
             .badge {
@@ -337,27 +363,44 @@ const SavedWordsModal: React.FC<SavedWordsModalProps> = ({
               background: #e0e7ff;
               color: #3730a3;
               font-weight: 800;
-              font-size: 10px;
-              padding: 2px 8px;
+              font-size: 9px;
+              padding: 2px 7px;
               border-radius: 9999px;
-              margin-bottom: 4px;
+              margin-bottom: 3px;
+            }
+            .section-title {
+              font-size: 12px;
+              font-weight: 800;
+              color: #1e1b4b;
+              margin: 0 0 8px 0;
+              display: flex;
+              align-items: center;
+              gap: 8px;
+            }
+            .count-badge {
+              background: #e0e7ff;
+              color: #3730a3;
+              font-size: 10px;
+              font-weight: 700;
+              padding: 1px 7px;
+              border-radius: 9999px;
             }
             table {
               width: 100%;
               border-collapse: collapse;
-              font-size: 11px;
+              font-size: 10px;
             }
             th {
               background-color: #f8fafc;
               color: #334155;
               font-weight: 700;
               text-align: left;
-              padding: 8px 10px;
+              padding: 6px 8px;
               border: 1px solid #cbd5e1;
-              font-size: 11px;
+              font-size: 10px;
             }
             td {
-              padding: 7px 10px;
+              padding: 5px 8px;
               border: 1px solid #e2e8f0;
               vertical-align: middle;
             }
@@ -365,13 +408,13 @@ const SavedWordsModal: React.FC<SavedWordsModalProps> = ({
               background-color: #fafafa;
             }
             .footer-bar {
-              margin-top: 20px;
+              margin-top: 14px;
               display: flex;
               justify-content: space-between;
-              font-size: 10px;
+              font-size: 9px;
               color: #94a3b8;
               border-top: 1px solid #e2e8f0;
-              padding-top: 8px;
+              padding-top: 6px;
             }
           </style>
         </head>
@@ -379,27 +422,21 @@ const SavedWordsModal: React.FC<SavedWordsModalProps> = ({
           <div class="header-bar">
             <div>
               <span class="badge">CEFR B2 • DeutschBuddy</span>
-              <h1 class="brand-title">${title}</h1>
-              <p class="brand-sub">${itemsToPrint.length} ta yodlash uchun saralangan ${isWords ? "so'zlar" : "iboralar"}</p>
+              <h1 class="brand-title">${docTitle}</h1>
+              <p class="brand-sub">${totalItems} ${language === 'uz' ? "ta birlik saralangan" : language === 'ru' ? "единиц выбрано" : "items selected for study"}</p>
             </div>
             <div class="doc-info">
-              <div>Sana: <strong>${dateStr}</strong></div>
-              <div>Holat: Chop etish / PDF saqlash</div>
+              <div>${language === 'uz' ? "Sana" : language === 'ru' ? "Дата" : "Date"}: <strong>${dateStr}</strong></div>
+              <div>${language === 'uz' ? "Holat: Chop etish / PDF saqlash" : language === 'ru' ? "Статус: Печать / Сохранить PDF" : "Status: Print / Save as PDF"}</div>
             </div>
           </div>
 
-          <table>
-            <thead>
-              ${headersHtml}
-            </thead>
-            <tbody>
-              ${rowsHtml}
-            </tbody>
-          </table>
+          ${wordsSection}
+          ${phrasesSection}
 
           <div class="footer-bar">
-            <span>DeutschBuddy - Goethe-Zertifikat & telc B2 Tayyorgarlik Tizimi</span>
-            <span>Jami: ${itemsToPrint.length} ta birlik</span>
+            <span>DeutschBuddy — Goethe-Zertifikat & telc B2</span>
+            <span>${language === 'uz' ? "Jami" : language === 'ru' ? "Итого" : "Total"}: ${totalItems}</span>
           </div>
 
           <script>
@@ -419,6 +456,7 @@ const SavedWordsModal: React.FC<SavedWordsModalProps> = ({
   if (!isOpen) return null;
 
   const currentCount = activeTab === 'words' ? filteredWords.length : filteredPhrases.length;
+
   const currentSelectedCount = activeTab === 'words' ? selectedWords.size : selectedPhrases.size;
   const totalCount = savedWords.length + savedPhrases.length;
   const isAllSelected = currentCount > 0 && currentSelectedCount === currentCount;
@@ -444,33 +482,39 @@ const SavedWordsModal: React.FC<SavedWordsModalProps> = ({
                 </div>
                 <div>
                   <h2 className="text-base sm:text-lg font-black text-slate-900 dark:text-slate-100 flex items-center gap-2">
-                    {language === 'uz' ? "Mening lug'atim" : 'My Study Deck'}
+                    {language === 'uz' ? "Mening lug'atim" : language === 'ru' ? "Мой словарь" : 'My Study Deck'}
                     <span className="text-xs font-bold text-amber-700 dark:text-amber-300 bg-amber-100 dark:bg-amber-950/70 border border-amber-200 dark:border-amber-800 px-2 py-0.5 rounded-full">
                       {totalCount}
                     </span>
                   </h2>
                   <p className="text-[11px] text-slate-400 font-medium hidden sm:block">
-                    {language === 'uz' ? "Bulutda (Firebase) avtomatik saqlangan" : "Automatically synced to cloud"}
+                    {language === 'uz' ? "Bulutda (Firebase) avtomatik saqlangan" : language === 'ru' ? "Автосинхронизировано с облаком" : "Automatically synced to cloud"}
                   </p>
                 </div>
               </div>
 
               <div className="flex items-center gap-1.5 sm:gap-2">
-                {/* Print PDF Button */}
-                <button
-                  onClick={handlePrintPdf}
-                  disabled={currentCount === 0}
-                  className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 disabled:opacity-40 rounded-xl text-xs sm:text-sm font-bold border border-slate-200 dark:border-slate-700 active:scale-95 transition-all shadow-sm"
-                  title="PDF / Chop etish"
-                >
-                  <Printer className="w-4 h-4 text-indigo-500" />
-                  <span className="hidden sm:inline">{language === 'uz' ? 'Chop etish' : 'Print'}</span>
-                  {currentSelectedCount > 0 && (
-                    <span className="px-1.5 py-0.2 rounded-full bg-indigo-600 text-white text-[10px]">
-                      {currentSelectedCount}
-                    </span>
-                  )}
-                </button>
+                {/* Print PDF Button — cross-tab: shows combined selection count */}
+                {(() => {
+                  const combinedSelectedCount = selectedWords.size + selectedPhrases.size;
+                  const printDisabled = savedWords.length === 0 && savedPhrases.length === 0;
+                  return (
+                    <button
+                      onClick={handlePrintPdf}
+                      disabled={printDisabled}
+                      className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 disabled:opacity-40 rounded-xl text-xs sm:text-sm font-bold border border-slate-200 dark:border-slate-700 active:scale-95 transition-all shadow-sm"
+                      title="PDF / Chop etish"
+                    >
+                      <Printer className="w-4 h-4 text-indigo-500" />
+                      <span className="hidden sm:inline">{language === 'uz' ? 'Chop etish' : language === 'ru' ? 'Печать' : 'Print'}</span>
+                      {combinedSelectedCount > 0 && (
+                        <span className="px-1.5 py-0.2 rounded-full bg-indigo-600 text-white text-[10px]">
+                          {combinedSelectedCount}
+                        </span>
+                      )}
+                    </button>
+                  );
+                })()}
 
                 {/* Flashcards Review Button */}
                 <button 
@@ -480,7 +524,7 @@ const SavedWordsModal: React.FC<SavedWordsModalProps> = ({
                   title="Flashcards"
                 >
                   <Play className="w-3.5 h-3.5 fill-current" />
-                  <span>{language === 'uz' ? 'Mashq' : 'Practice'}</span>
+                  <span>{language === 'uz' ? 'Mashq' : language === 'ru' ? 'Практика' : 'Practice'}</span>
                 </button>
 
                 <button 
