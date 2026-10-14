@@ -135,28 +135,34 @@ const App: React.FC = () => {
           console.error("Profile sync error:", e);
         }
 
-        // One-time migration of local storage items into Firestore
-        const localWordsStr = localStorage.getItem('deutschBuddy_savedWords');
-        const localPhrasesStr = localStorage.getItem('deutschBuddy_savedPhrases');
-        if (localWordsStr) {
-          try {
-            const lw: VocabItem[] = JSON.parse(localWordsStr);
-            if (Array.isArray(lw) && lw.length > 0) {
-              await batchSaveWordsToFirestore(user.uid, lw);
+        // One-time migration of local storage items into Firestore (only runs once per user)
+        const migrationKey = `deutschBuddy_migrated_${user.uid}`;
+        if (!localStorage.getItem(migrationKey)) {
+          const localWordsStr = localStorage.getItem('deutschBuddy_savedWords');
+          const localPhrasesStr = localStorage.getItem('deutschBuddy_savedPhrases');
+          if (localWordsStr) {
+            try {
+              const lw: VocabItem[] = JSON.parse(localWordsStr);
+              if (Array.isArray(lw) && lw.length > 0) {
+                const uniqueLw = Array.from(new Map(lw.map(item => [item.word.trim().toLowerCase(), item])).values());
+                await batchSaveWordsToFirestore(user.uid, uniqueLw);
+              }
+            } catch (e) {
+              console.error("Migration error for words:", e);
             }
-          } catch (e) {
-            console.error("Migration error for words:", e);
           }
-        }
-        if (localPhrasesStr) {
-          try {
-            const lp: PhraseItem[] = JSON.parse(localPhrasesStr);
-            if (Array.isArray(lp) && lp.length > 0) {
-              await batchSavePhrasesToFirestore(user.uid, lp);
+          if (localPhrasesStr) {
+            try {
+              const lp: PhraseItem[] = JSON.parse(localPhrasesStr);
+              if (Array.isArray(lp) && lp.length > 0) {
+                const uniqueLp = Array.from(new Map(lp.map(item => [item.phrase.trim().toLowerCase(), item])).values());
+                await batchSavePhrasesToFirestore(user.uid, uniqueLp);
+              }
+            } catch (e) {
+              console.error("Migration error for phrases:", e);
             }
-          } catch (e) {
-            console.error("Migration error for phrases:", e);
           }
+          localStorage.setItem(migrationKey, 'true');
         }
 
         // Real-time Firestore listeners
@@ -282,14 +288,15 @@ const App: React.FC = () => {
   };
 
   const handleToggleSave = async (item: VocabItem) => {
-    const exists = savedWords.some(w => w.word === item.word);
+    const itemWord = item.word.trim().toLowerCase();
+    const exists = savedWords.some(w => w.word.trim().toLowerCase() === itemWord);
     if (exists) {
-      setSavedWords(prev => prev.filter(w => w.word !== item.word));
+      setSavedWords(prev => prev.filter(w => w.word.trim().toLowerCase() !== itemWord));
       if (currentUser) {
         try { await deleteWordFromFirestore(currentUser.uid, item.word); } catch (e) { console.error(e); }
       }
     } else {
-      setSavedWords(prev => [...prev, item]);
+      setSavedWords(prev => [...prev.filter(w => w.word.trim().toLowerCase() !== itemWord), item]);
       if (currentUser) {
         try { await saveWordToFirestore(currentUser.uid, item); } catch (e) { console.error(e); }
       }
@@ -297,14 +304,15 @@ const App: React.FC = () => {
   };
 
   const handleToggleSavePhrase = async (item: PhraseItem) => {
-    const exists = savedPhrases.some(p => p.phrase === item.phrase);
+    const itemPhrase = item.phrase.trim().toLowerCase();
+    const exists = savedPhrases.some(p => p.phrase.trim().toLowerCase() === itemPhrase);
     if (exists) {
-      setSavedPhrases(prev => prev.filter(p => p.phrase !== item.phrase));
+      setSavedPhrases(prev => prev.filter(p => p.phrase.trim().toLowerCase() !== itemPhrase));
       if (currentUser) {
         try { await deletePhraseFromFirestore(currentUser.uid, item.phrase); } catch (e) { console.error(e); }
       }
     } else {
-      setSavedPhrases(prev => [...prev, item]);
+      setSavedPhrases(prev => [...prev.filter(p => p.phrase.trim().toLowerCase() !== itemPhrase), item]);
       if (currentUser) {
         try { await savePhraseToFirestore(currentUser.uid, item); } catch (e) { console.error(e); }
       }

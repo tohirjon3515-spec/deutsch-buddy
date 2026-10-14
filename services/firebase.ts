@@ -88,14 +88,15 @@ export function handleFirestoreError(error: unknown, operationType: OperationTyp
   throw new Error(JSON.stringify(errInfo));
 }
 
-// 4. Safe ID generator obeying ^[a-zA-Z0-9_\-]+$ and length <= 128
+// 4. Safe deterministic ID generator obeying ^[a-zA-Z0-9_\-]+$ and length <= 128
 export function sanitizeDocId(prefix: string, seed: string): string {
   const safeSeed = seed
+    .toLowerCase()
+    .trim()
     .replace(/[^a-zA-Z0-9_-]/g, '_')
-    .slice(0, 40);
-  const rand = Math.random().toString(36).substring(2, 8);
-  const id = `${prefix}_${safeSeed}_${rand}`.replace(/_+/g, '_');
-  return id.slice(0, 100);
+    .replace(/_+/g, '_')
+    .slice(0, 70);
+  return `${prefix}_${safeSeed}`.slice(0, 100);
 }
 
 // 5. Auth operations and Listener Registry
@@ -199,19 +200,24 @@ export function subscribeSavedWords(
   unsubSnapshot = onSnapshot(
     wordsCol,
     (snapshot) => {
-      const items: VocabItem[] = [];
+      const itemsMap = new Map<string, VocabItem>();
       snapshot.forEach((d) => {
         const data = d.data();
-        items.push({
-          word: data.word,
-          type: data.type,
-          grammarForms: data.grammarForms,
-          meaning: data.meaning,
-          contextSentence: data.contextSentence || '',
-          difficulty: data.difficulty,
-        });
+        if (data.word) {
+          const key = data.word.trim().toLowerCase();
+          if (!itemsMap.has(key)) {
+            itemsMap.set(key, {
+              word: data.word,
+              type: data.type,
+              grammarForms: data.grammarForms,
+              meaning: data.meaning,
+              contextSentence: data.contextSentence || '',
+              difficulty: data.difficulty,
+            });
+          }
+        }
       });
-      onUpdate(items);
+      onUpdate(Array.from(itemsMap.values()));
     },
     (error) => {
       if (!auth.currentUser || auth.currentUser.uid !== userId) {
@@ -253,15 +259,14 @@ export async function deleteWordFromFirestore(userId: string, word: string): Pro
   try {
     const colRef = collection(db, 'users', userId, 'savedWords');
     const snapshot = await getDocs(colRef);
-    const toDelete: string[] = [];
+    const batch = writeBatch(db);
+    const target = word.trim().toLowerCase();
     snapshot.forEach(d => {
-      if (d.data().word === word) {
-        toDelete.push(d.id);
+      if ((d.data().word || '').trim().toLowerCase() === target) {
+        batch.delete(d.ref);
       }
     });
-    for (const id of toDelete) {
-      await deleteDoc(doc(db, 'users', userId, 'savedWords', id));
-    }
+    await batch.commit();
   } catch (err) {
     handleFirestoreError(err, OperationType.DELETE, path);
   }
@@ -364,19 +369,24 @@ export function subscribeSavedPhrases(
   unsubSnapshot = onSnapshot(
     phrasesCol,
     (snapshot) => {
-      const items: PhraseItem[] = [];
+      const itemsMap = new Map<string, PhraseItem>();
       snapshot.forEach((d) => {
         const data = d.data();
-        items.push({
-          phrase: data.phrase,
-          literalTranslation: data.literalTranslation,
-          actualMeaning: data.actualMeaning,
-          explanation: data.explanation,
-          exampleSentence: data.exampleSentence,
-          difficulty: data.difficulty || 'Common',
-        });
+        if (data.phrase) {
+          const key = data.phrase.trim().toLowerCase();
+          if (!itemsMap.has(key)) {
+            itemsMap.set(key, {
+              phrase: data.phrase,
+              literalTranslation: data.literalTranslation,
+              actualMeaning: data.actualMeaning,
+              explanation: data.explanation,
+              exampleSentence: data.exampleSentence,
+              difficulty: data.difficulty || 'Common',
+            });
+          }
+        }
       });
-      onUpdate(items);
+      onUpdate(Array.from(itemsMap.values()));
     },
     (error) => {
       if (!auth.currentUser || auth.currentUser.uid !== userId) {
@@ -418,15 +428,14 @@ export async function deletePhraseFromFirestore(userId: string, phrase: string):
   try {
     const colRef = collection(db, 'users', userId, 'savedPhrases');
     const snapshot = await getDocs(colRef);
-    const toDelete: string[] = [];
+    const batch = writeBatch(db);
+    const target = phrase.trim().toLowerCase();
     snapshot.forEach(d => {
-      if (d.data().phrase === phrase) {
-        toDelete.push(d.id);
+      if ((d.data().phrase || '').trim().toLowerCase() === target) {
+        batch.delete(d.ref);
       }
     });
-    for (const id of toDelete) {
-      await deleteDoc(doc(db, 'users', userId, 'savedPhrases', id));
-    }
+    await batch.commit();
   } catch (err) {
     handleFirestoreError(err, OperationType.DELETE, path);
   }
