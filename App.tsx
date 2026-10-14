@@ -519,129 +519,158 @@ const App: React.FC = () => {
         </div>
       )}
 
-      <nav className="sticky top-0 z-40 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 transition-colors duration-300">
-        <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="bg-indigo-600 p-1.5 rounded-lg">
-              <Sparkles className="w-5 h-5 text-white" />
+      <nav className="sticky top-0 z-40 bg-white/85 dark:bg-slate-900/85 backdrop-blur-md border-b border-slate-200/80 dark:border-slate-800 transition-colors duration-300">
+        <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between gap-2 sm:gap-4">
+          {/* ZONE 1: BRAND & LOGO (LEFT) */}
+          <div className="flex items-center gap-2.5 shrink-0">
+            <div className="bg-gradient-to-tr from-indigo-600 to-violet-600 p-2 rounded-xl shadow-md shadow-indigo-500/20 text-white">
+              <Sparkles className="w-5 h-5" />
             </div>
             <div className="flex flex-col">
-              <div className="flex items-center gap-1.5 sm:gap-2">
-                <span className="text-xl font-black bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-violet-600 dark:from-indigo-400 dark:to-violet-400 leading-tight">
+              <div className="flex items-center gap-1.5">
+                <span className="text-lg sm:text-xl font-black bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 via-indigo-500 to-violet-600 dark:from-indigo-400 dark:to-violet-400 leading-tight tracking-tight">
                   DeutschBuddy
                 </span>
-                <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300 border border-amber-300 dark:border-amber-800 tracking-wider">
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300 border border-amber-300/80 dark:border-amber-800/80 tracking-wider">
                   CEFR B2
                 </span>
               </div>
-              <span className="text-[10px] text-slate-400 font-medium hidden sm:inline">
+              <span className="text-[10px] text-slate-400 font-medium hidden md:inline leading-none">
                 {t.brandSubtitle}
               </span>
             </div>
           </div>
-          <div className="flex items-center gap-2 sm:gap-3">
-            {/* Clear Segmented Language Switcher */}
-            <div className="flex items-center bg-slate-100 dark:bg-slate-800 p-0.5 sm:p-1 rounded-xl border border-slate-200 dark:border-slate-700 shadow-inner">
+
+          {/* ZONE 2: LEARNING TOOLS ISLAND (CENTER) */}
+          <div className="flex items-center bg-slate-100/90 dark:bg-slate-800/90 p-1 rounded-2xl border border-slate-200/80 dark:border-slate-700/80 shadow-inner">
+            {/* Saved Words / Phrases */}
+            <button
+              onClick={() => setIsSavedModalOpen(true)}
+              className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl text-xs sm:text-sm font-semibold text-slate-700 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-white dark:hover:bg-slate-700/70 transition-all duration-200"
+              title={t.saved}
+            >
+              <Bookmark className="w-4 h-4 text-amber-500" />
+              <span className="hidden md:inline">{t.saved}</span>
+              {(savedWords.length + savedPhrases.length > 0) && (
+                <span className="px-1.5 py-0.5 text-[10px] font-black rounded-full bg-amber-100 dark:bg-amber-950 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-900/40">
+                  {savedWords.length + savedPhrases.length}
+                </span>
+              )}
+            </button>
+
+            {/* B2 Progress Dashboard */}
+            <button
+              onClick={() => setIsProgressOpen(true)}
+              className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl text-xs sm:text-sm font-semibold text-slate-700 dark:text-slate-300 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-white dark:hover:bg-slate-700/70 transition-all duration-200"
+              title={t.progressTitle}
+            >
+              <TrendingUp className="w-4 h-4 text-emerald-500" />
+              <span className="hidden md:inline">{t.progress}</span>
+              <span className="px-1.5 py-0.5 text-[9px] font-black uppercase rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-900/40">
+                B2
+              </span>
+            </button>
+
+            {/* Analysis History */}
+            <button
+              onClick={() => setIsHistoryOpen(true)}
+              className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl text-xs sm:text-sm font-semibold text-slate-700 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-white dark:hover:bg-slate-700/70 transition-all duration-200"
+              title={t.history}
+            >
+              <History className="w-4 h-4 text-indigo-500" />
+              <span className="hidden md:inline">{t.history}</span>
+              {historyList.length > 0 && (
+                <span className="px-1.5 py-0.5 text-[10px] font-black rounded-full bg-indigo-100 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-900/40">
+                  {historyList.length}
+                </span>
+              )}
+            </button>
+
+            {/* Live Audio / Voice Practice */}
+            <button
+              onClick={() => setIsLiveOpen(!isLiveOpen)}
+              className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl text-xs sm:text-sm font-semibold transition-all duration-200 ${
+                isLiveOpen
+                  ? 'bg-indigo-600 text-white shadow-sm'
+                  : 'text-slate-700 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-white dark:hover:bg-slate-700/70'
+              }`}
+              title={t.liveSpeaking}
+            >
+              <MessageSquare className={`w-4 h-4 ${isLiveOpen ? 'text-white' : 'text-indigo-500'}`} />
+              <span className="hidden lg:inline">{t.liveSpeaking}</span>
+            </button>
+          </div>
+
+          {/* ZONE 3: UTILITIES & AUTH (RIGHT) */}
+          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+            {/* Segmented Language Switcher */}
+            <div className="flex items-center bg-slate-100/90 dark:bg-slate-800/90 p-0.5 sm:p-1 rounded-xl border border-slate-200/80 dark:border-slate-700/80">
               <button
                 type="button"
                 onClick={() => handleLanguageChange('uz')}
-                className={`flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold transition-all ${
+                className={`flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-bold transition-all ${
                   language === 'uz'
                     ? 'bg-indigo-600 text-white shadow-sm'
                     : 'text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400'
                 }`}
                 title="O'zbek tiliga o'tish"
               >
-                <span>🇺🇿 O'zbekcha</span>
+                <span>🇺🇿</span>
+                <span className="hidden sm:inline">UZ</span>
               </button>
               <button
                 type="button"
                 onClick={() => handleLanguageChange('en')}
-                className={`flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold transition-all ${
+                className={`flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-bold transition-all ${
                   language === 'en'
                     ? 'bg-indigo-600 text-white shadow-sm'
                     : 'text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400'
                 }`}
                 title="Switch to English"
               >
-                <span>🇬🇧 English</span>
+                <span>🇬🇧</span>
+                <span className="hidden sm:inline">EN</span>
               </button>
             </div>
 
-            <button
-              onClick={toggleFullscreen}
-              className="p-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-all duration-300"
-              title={isFullscreen ? t.fullscreenExit : t.fullscreenEnter}
-            >
-              {isFullscreen ? <Minimize className="w-5 h-5" /> : <Maximize className="w-5 h-5" />}
-            </button>
-            <button
-              onClick={() => setIsDarkMode(!isDarkMode)}
-              className="p-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-all duration-300"
-            >
-              {isDarkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
-            </button>
+            {/* Display / Theme Toggles */}
+            <div className="flex items-center">
+              <button
+                onClick={toggleFullscreen}
+                className="p-1.5 sm:p-2 text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors"
+                title={isFullscreen ? t.fullscreenExit : t.fullscreenEnter}
+              >
+                {isFullscreen ? <Minimize className="w-4 h-4" /> : <Maximize className="w-4 h-4" />}
+              </button>
+              <button
+                onClick={() => setIsDarkMode(!isDarkMode)}
+                className="p-1.5 sm:p-2 text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors"
+                title={isDarkMode ? 'Light mode' : 'Dark mode'}
+              >
+                {isDarkMode ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4 text-slate-600" />}
+              </button>
+            </div>
 
-            {/* Analysis History Button */}
-            <button
-              onClick={() => setIsHistoryOpen(true)}
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-700 dark:text-indigo-300 rounded-lg text-sm font-bold border border-indigo-100 dark:border-indigo-900/30 transition-colors duration-300"
-              title={t.history}
-            >
-              <History className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
-              <span className="hidden sm:inline">{t.history}</span>
-              {historyList.length > 0 && (
-                <span className="text-xs bg-indigo-200/60 dark:bg-indigo-800 text-indigo-800 dark:text-indigo-200 px-1.5 py-0.2 rounded-full font-bold">
-                  {historyList.length}
-                </span>
-              )}
-            </button>
-
-            {/* Visual Progress Dashboard Button */}
-            <button
-              onClick={() => setIsProgressOpen(true)}
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-300 rounded-lg text-sm font-bold border border-emerald-200 dark:border-emerald-800/40 hover:bg-emerald-100 dark:hover:bg-emerald-900/40 transition-colors duration-300 shadow-sm"
-              title={t.progressTitle}
-            >
-              <TrendingUp className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-              <span className="hidden sm:inline">{t.progress}</span>
-              <span className="text-[10px] font-black uppercase px-1.5 py-0.2 rounded-full bg-emerald-200 dark:bg-emerald-800 text-emerald-900 dark:text-emerald-100">
-                B2
-              </span>
-            </button>
-
-            <button
-              onClick={() => setIsSavedModalOpen(true)}
-              className="flex items-center gap-2 px-3 py-1.5 bg-yellow-50 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-400 rounded-lg text-sm font-bold border border-yellow-100 dark:border-yellow-900/30 transition-colors duration-300"
-            >
-              <Bookmark className="w-4 h-4" />
-              <span className="hidden sm:inline">{t.saved}</span> ({savedWords.length + savedPhrases.length})
-            </button>
-            <button
-              onClick={() => setIsLiveOpen(!isLiveOpen)}
-              className={`p-2 rounded-lg transition-all duration-300 ${isLiveOpen ? 'bg-indigo-600 text-white' : 'text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
-              title={t.liveSpeaking}
-            >
-              <MessageSquare className="w-5 h-5" />
-            </button>
-
-            {/* Google Authentication & Firestore Sync Indicator */}
+            {/* Google Authentication & Firestore Sync */}
             {currentUser ? (
-              <div className="flex items-center gap-2 pl-2 border-l border-slate-200 dark:border-slate-700">
-                <div className="flex items-center gap-2" title={`Signed in as ${currentUser.email} • Synced to Cloud Firestore`}>
+              <div className="flex items-center gap-1.5 pl-1.5 border-l border-slate-200 dark:border-slate-800">
+                <div
+                  className="flex items-center gap-2 p-1 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800/60 transition-colors"
+                  title={`Signed in as ${currentUser.email} • Synced to Cloud Firestore`}
+                >
                   {currentUser.photoURL ? (
                     <img
                       src={currentUser.photoURL}
                       alt={currentUser.displayName || 'User'}
-                      className="w-8 h-8 rounded-full border border-indigo-200 dark:border-indigo-700 object-cover"
+                      className="w-7 h-7 sm:w-8 sm:h-8 rounded-full border border-indigo-200 dark:border-indigo-700 object-cover shadow-sm"
                     />
                   ) : (
-                    <div className="w-8 h-8 rounded-full bg-indigo-600 text-white flex items-center justify-center font-bold text-xs">
+                    <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-gradient-to-tr from-indigo-600 to-violet-600 text-white flex items-center justify-center font-bold text-xs shadow-sm">
                       {currentUser.displayName ? currentUser.displayName[0].toUpperCase() : 'U'}
                     </div>
                   )}
-                  <div className="hidden lg:flex flex-col text-left leading-tight">
-                    <span className="text-xs font-bold text-slate-800 dark:text-slate-200 max-w-[110px] truncate">
+                  <div className="hidden xl:flex flex-col text-left leading-tight">
+                    <span className="text-xs font-bold text-slate-800 dark:text-slate-200 max-w-[100px] truncate">
                       {currentUser.displayName || (language === 'uz' ? "Nemis tili o'quvchisi" : 'Deutsch Learner')}
                     </span>
                     <span className="text-[10px] font-semibold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
@@ -651,7 +680,7 @@ const App: React.FC = () => {
                 </div>
                 <button
                   onClick={handleSignOut}
-                  className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-lg transition-colors"
+                  className="p-1.5 sm:p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-xl transition-colors"
                   title={t.signOut}
                 >
                   <LogOut className="w-4 h-4" />
@@ -661,16 +690,16 @@ const App: React.FC = () => {
               <button
                 onClick={handleGoogleSignIn}
                 disabled={isAuthLoading}
-                className="flex items-center gap-2 px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white rounded-lg text-sm font-bold shadow-sm transition-all active:scale-95 ml-1"
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white rounded-xl text-xs sm:text-sm font-bold shadow-sm transition-all active:scale-95"
                 title="Google login"
               >
-                <svg className="w-4 h-4" viewBox="0 0 24 24">
+                <svg className="w-3.5 h-3.5" viewBox="0 0 24 24">
                   <path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
                   <path fill="currentColor" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
                   <path fill="currentColor" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" />
                   <path fill="currentColor" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" />
                 </svg>
-                <span className="hidden md:inline">{t.googleLogin}</span>
+                <span className="hidden sm:inline">{t.googleLogin}</span>
               </button>
             )}
           </div>
