@@ -1,12 +1,12 @@
 {
-  "projectId": "optical-buckeye-971nt",
-  "appId": "1:85658071126:web:244832d6b5c915d6094bf7",
-  "apiKey": "AIzaSyBF_ilhKBIKuNSRIeutoo4G4w0i50D0t-w",
-  "authDomain": "optical-buckeye-971nt.firebaseapp.com",
+  "projectId": "hypnic-command-18gvj",
+  "appId": "1:14480068043:web:4c8b9cf55158bf297afa4e",
+  "apiKey": "AIzaSyDREKSZhMS7ajO5gfeAyCcSy2-coVIbUQE",
+  "authDomain": "hypnic-command-18gvj.firebaseapp.com",
   "firestoreDatabaseId": "ai-studio-deutschbuddy-dcf3e08e-0b21-42af-9865-48c584be0c58",
-  "storageBucket": "optical-buckeye-971nt.firebasestorage.app",
-  "messagingSenderId": "85658071126",
+  "storageBucket": "hypnic-command-18gvj.firebasestorage.app",
+  "messagingSenderId": "14480068043",
   "measurementId": "",
-  "oAuthClientId": "85658071126-usg5mr0frcfe00qi3u8tmjbbb1bv8qvm.apps.googleusercontent.com",
+  "oAuthClientId": "14480068043-qmdeoq7lgci4ejmfu0vrhss2uv8t18jc.apps.googleusercontent.com",
   "recaptchaSiteKey": ""
 }

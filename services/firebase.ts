@@ -117,7 +117,11 @@ export async function signInWithGoogle(): Promise<User> {
   try {
     const cred = await signInWithPopup(auth, googleProvider);
     if (cred.user) {
-      await syncUserProfile(cred.user);
+      try {
+        await syncUserProfile(cred.user);
+      } catch (profileErr) {
+        console.warn("User profile background sync warning:", profileErr);
+      }
     }
     return cred.user;
   } catch (error) {
@@ -140,25 +144,20 @@ export async function syncUserProfile(user: User): Promise<void> {
   const path = `users/${user.uid}`;
   try {
     const userRef = doc(db, 'users', user.uid);
-    const existing = await getDoc(userRef);
     const now = new Date().toISOString();
     
-    if (!existing.exists()) {
-      await setDoc(userRef, {
+    // Always include uid and email to satisfy security rules regardless of create or update
+    await setDoc(
+      userRef,
+      {
         uid: user.uid,
         email: user.email || 'user@example.com',
         displayName: user.displayName || 'Deutsch Learner',
         photoURL: user.photoURL || '',
-        createdAt: now,
         updatedAt: now,
-      });
-    } else {
-      await setDoc(userRef, {
-        displayName: user.displayName || 'Deutsch Learner',
-        photoURL: user.photoURL || '',
-        updatedAt: now,
-      }, { merge: true });
-    }
+      },
+      { merge: true }
+    );
   } catch (err) {
     handleFirestoreError(err, OperationType.WRITE, path);
   }
@@ -237,20 +236,27 @@ export async function saveWordToFirestore(userId: string, item: VocabItem): Prom
   try {
     const now = new Date().toISOString();
     const wordRef = doc(db, 'users', userId, 'savedWords', docId);
-    await setDoc(wordRef, {
+    const dataToSave: Record<string, any> = {
       id: docId,
       userId,
       word: item.word.slice(0, 120),
-      type: item.type.slice(0, 60),
-      grammarForms: item.grammarForms.slice(0, 200),
-      meaning: item.meaning.slice(0, 300),
-      contextSentence: (item.contextSentence || '').slice(0, 500),
+      type: (item.type || 'Word').slice(0, 60),
+      grammarForms: (item.grammarForms || '').slice(0, 300),
+      meaning: (item.meaning || '').slice(0, 500),
+      contextSentence: (item.contextSentence || '').slice(0, 800),
       difficulty: item.difficulty || 'easy',
       createdAt: now,
       updatedAt: now,
-    });
+    };
+    if (item.cefrLevel && ['B1', 'B2', 'C1'].includes(item.cefrLevel)) {
+      dataToSave.cefrLevel = item.cefrLevel;
+    }
+    if (typeof item.isNVV === 'boolean') {
+      dataToSave.isNVV = item.isNVV;
+    }
+    await setDoc(wordRef, dataToSave, { merge: true });
   } catch (err) {
-    handleFirestoreError(err, OperationType.CREATE, path);
+    handleFirestoreError(err, OperationType.WRITE, path);
   }
 }
 
@@ -321,18 +327,25 @@ export async function batchSaveWordsToFirestore(userId: string, items: VocabItem
     items.forEach(item => {
       const docId = sanitizeDocId('w', item.word);
       const wordRef = doc(db, 'users', userId, 'savedWords', docId);
-      batch.set(wordRef, {
+      const dataToSave: Record<string, any> = {
         id: docId,
         userId,
         word: item.word.slice(0, 120),
-        type: item.type.slice(0, 60),
-        grammarForms: item.grammarForms.slice(0, 200),
-        meaning: item.meaning.slice(0, 300),
-        contextSentence: (item.contextSentence || '').slice(0, 500),
+        type: (item.type || 'Word').slice(0, 60),
+        grammarForms: (item.grammarForms || '').slice(0, 300),
+        meaning: (item.meaning || '').slice(0, 500),
+        contextSentence: (item.contextSentence || '').slice(0, 800),
         difficulty: item.difficulty || 'easy',
         createdAt: now,
         updatedAt: now,
-      });
+      };
+      if (item.cefrLevel && ['B1', 'B2', 'C1'].includes(item.cefrLevel)) {
+        dataToSave.cefrLevel = item.cefrLevel;
+      }
+      if (typeof item.isNVV === 'boolean') {
+        dataToSave.isNVV = item.isNVV;
+      }
+      batch.set(wordRef, dataToSave, { merge: true });
     });
     await batch.commit();
   } catch (err) {
@@ -406,20 +419,24 @@ export async function savePhraseToFirestore(userId: string, item: PhraseItem): P
   try {
     const now = new Date().toISOString();
     const phraseRef = doc(db, 'users', userId, 'savedPhrases', docId);
-    await setDoc(phraseRef, {
+    const dataToSave: Record<string, any> = {
       id: docId,
       userId,
-      phrase: item.phrase.slice(0, 200),
-      literalTranslation: item.literalTranslation.slice(0, 300),
-      actualMeaning: item.actualMeaning.slice(0, 300),
-      explanation: item.explanation.slice(0, 500),
-      exampleSentence: item.exampleSentence.slice(0, 500),
+      phrase: item.phrase.slice(0, 300),
+      literalTranslation: item.literalTranslation.slice(0, 500),
+      actualMeaning: item.actualMeaning.slice(0, 500),
+      explanation: item.explanation.slice(0, 800),
+      exampleSentence: item.exampleSentence.slice(0, 800),
       difficulty: item.difficulty || 'Common',
       createdAt: now,
       updatedAt: now,
-    });
+    };
+    if (item.category) {
+      dataToSave.category = item.category.slice(0, 100);
+    }
+    await setDoc(phraseRef, dataToSave, { merge: true });
   } catch (err) {
-    handleFirestoreError(err, OperationType.CREATE, path);
+    handleFirestoreError(err, OperationType.WRITE, path);
   }
 }
 
@@ -462,18 +479,22 @@ export async function batchSavePhrasesToFirestore(userId: string, items: PhraseI
     items.forEach(item => {
       const docId = sanitizeDocId('p', item.phrase);
       const phraseRef = doc(db, 'users', userId, 'savedPhrases', docId);
-      batch.set(phraseRef, {
+      const dataToSave: Record<string, any> = {
         id: docId,
         userId,
-        phrase: item.phrase.slice(0, 200),
-        literalTranslation: item.literalTranslation.slice(0, 300),
-        actualMeaning: item.actualMeaning.slice(0, 300),
-        explanation: item.explanation.slice(0, 500),
-        exampleSentence: item.exampleSentence.slice(0, 500),
+        phrase: item.phrase.slice(0, 300),
+        literalTranslation: item.literalTranslation.slice(0, 500),
+        actualMeaning: item.actualMeaning.slice(0, 500),
+        explanation: item.explanation.slice(0, 800),
+        exampleSentence: item.exampleSentence.slice(0, 800),
         difficulty: item.difficulty || 'Common',
         createdAt: now,
         updatedAt: now,
-      });
+      };
+      if (item.category) {
+        dataToSave.category = item.category.slice(0, 100);
+      }
+      batch.set(phraseRef, dataToSave, { merge: true });
     });
     await batch.commit();
   } catch (err) {
@@ -561,20 +582,20 @@ export async function saveHistoryRecord(
     const dataToSave: Record<string, any> = {
       id: docId,
       userId,
-      text: record.text.slice(0, 4000),
+      text: record.text.slice(0, 5000),
       mode: record.mode,
-      translation: record.translation.slice(0, 4000),
+      translation: record.translation.slice(0, 5000),
       createdAt: now,
     };
-    if (record.grammarTopic) dataToSave.grammarTopic = record.grammarTopic.slice(0, 200);
+    if (record.grammarTopic) dataToSave.grammarTopic = record.grammarTopic.slice(0, 300);
     if (record.detectedStructures && Array.isArray(record.detectedStructures)) {
-      dataToSave.detectedStructures = record.detectedStructures.slice(0, 10);
+      dataToSave.detectedStructures = record.detectedStructures.slice(0, 30).map(s => String(s).slice(0, 200));
     }
     if (typeof record.vocabCount === 'number') dataToSave.vocabCount = record.vocabCount;
 
-    await setDoc(docRef, dataToSave);
+    await setDoc(docRef, dataToSave, { merge: true });
   } catch (err) {
-    handleFirestoreError(err, OperationType.CREATE, path);
+    handleFirestoreError(err, OperationType.WRITE, path);
   }
 }
 

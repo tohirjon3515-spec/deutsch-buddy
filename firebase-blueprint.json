@@ -19,12 +19,12 @@
         "displayName": {
           "type": "string",
           "description": "Display name of the user",
-          "maxLength": 120
+          "maxLength": 200
         },
         "photoURL": {
           "type": "string",
           "description": "User profile avatar photo URL",
-          "maxLength": 1024
+          "maxLength": 2048
         },
         "createdAt": {
           "type": "string",
@@ -35,7 +35,7 @@
           "description": "Last update timestamp"
         }
       },
-      "required": ["uid", "email"]
+      "required": ["uid"]
     },
     "SavedWord": {
       "title": "SavedWord",
@@ -65,23 +65,33 @@
         "grammarForms": {
           "type": "string",
           "description": "Article, plural, or conjugation forms",
-          "maxLength": 200
+          "maxLength": 300
         },
         "meaning": {
           "type": "string",
-          "description": "English meaning/translation",
-          "maxLength": 300
+          "description": "Meaning/translation in user's target language",
+          "maxLength": 500
         },
         "contextSentence": {
           "type": "string",
           "description": "German sentence illustrating word usage in context",
-          "maxLength": 500
+          "maxLength": 800
         },
         "difficulty": {
           "type": "string",
           "description": "Learning difficulty state",
-          "enum": ["easy", "hard"],
-          "maxLength": 20
+          "enum": ["easy", "hard", "Common", "Intermediate", "Advanced"],
+          "maxLength": 30
+        },
+        "cefrLevel": {
+          "type": "string",
+          "description": "CEFR level",
+          "enum": ["B1", "B2", "C1"],
+          "maxLength": 10
+        },
+        "isNVV": {
+          "type": "boolean",
+          "description": "Whether word is part of a Nomen-Verb-Verbindung"
         },
         "createdAt": {
           "type": "string",
@@ -112,33 +122,38 @@
         "phrase": {
           "type": "string",
           "description": "German phrase or idiom",
-          "maxLength": 200
+          "maxLength": 300
         },
         "literalTranslation": {
           "type": "string",
           "description": "Literal word-by-word translation",
-          "maxLength": 300
+          "maxLength": 500
         },
         "actualMeaning": {
           "type": "string",
-          "description": "Actual idiomatic meaning in English",
-          "maxLength": 300
+          "description": "Actual idiomatic meaning",
+          "maxLength": 500
         },
         "explanation": {
           "type": "string",
           "description": "Grammatical and cultural explanation",
-          "maxLength": 500
+          "maxLength": 800
         },
         "exampleSentence": {
           "type": "string",
           "description": "German example sentence using the phrase",
-          "maxLength": 500
+          "maxLength": 800
         },
         "difficulty": {
           "type": "string",
           "description": "Complexity tier",
-          "enum": ["Common", "Intermediate", "Advanced"],
+          "enum": ["Common", "Intermediate", "Advanced", "easy", "hard"],
           "maxLength": 30
+        },
+        "category": {
+          "type": "string",
+          "description": "Phrase category (e.g. Nomen-Verb-Verbindung, B2 Redemittel)",
+          "maxLength": 100
         },
         "createdAt": {
           "type": "string",
@@ -169,7 +184,7 @@
         "text": {
           "type": "string",
           "description": "Original analyzed German text",
-          "maxLength": 4000
+          "maxLength": 5000
         },
         "mode": {
           "type": "string",
@@ -179,13 +194,13 @@
         },
         "translation": {
           "type": "string",
-          "description": "English translation result",
-          "maxLength": 4000
+          "description": "Translation result",
+          "maxLength": 5000
         },
         "grammarTopic": {
           "type": "string",
           "description": "Grammar spotlight topic title",
-          "maxLength": 200
+          "maxLength": 300
         },
         "detectedStructures": {
           "type": "array",

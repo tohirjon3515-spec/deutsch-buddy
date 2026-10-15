@@ -1,6 +1,63 @@
 import { AnalysisResult, VocabItem } from "../types";
 
-// 1. Analyze German Text (Proxied to backend)
+export const USER_API_KEY_STORAGE = 'gemini_user_api_key';
+
+/**
+ * Retrieves user's personal Gemini API key from browser localStorage
+ */
+export const getUserApiKey = (): string | null => {
+  try {
+    const key = localStorage.getItem(USER_API_KEY_STORAGE);
+    return key && key.trim() ? key.trim() : null;
+  } catch {
+    return null;
+  }
+};
+
+/**
+ * Stores user's personal Gemini API key in browser localStorage
+ */
+export const setUserApiKey = (key: string): void => {
+  try {
+    localStorage.setItem(USER_API_KEY_STORAGE, key.trim());
+  } catch (e) {
+    console.error("Failed to save API key to localStorage:", e);
+  }
+};
+
+/**
+ * Removes user's personal Gemini API key from browser localStorage
+ */
+export const removeUserApiKey = (): void => {
+  try {
+    localStorage.removeItem(USER_API_KEY_STORAGE);
+  } catch (e) {
+    console.error("Failed to remove API key from localStorage:", e);
+  }
+};
+
+/**
+ * Checks whether user has configured a personal Gemini API key
+ */
+export const hasUserApiKey = (): boolean => {
+  return !!getUserApiKey();
+};
+
+/**
+ * Generates headers for API requests, injecting 'x-user-api-key' if present
+ */
+export const getAuthHeaders = (): Record<string, string> => {
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+  };
+  const userApiKey = getUserApiKey();
+  if (userApiKey) {
+    headers["x-user-api-key"] = userApiKey;
+  }
+  return headers;
+};
+
+// 1. Analyze German Text (Proxied to backend with optional personal API key header)
 export const analyzeGermanText = async (
   text: string, 
   useSearch: boolean = false, 
@@ -9,9 +66,7 @@ export const analyzeGermanText = async (
 ): Promise<AnalysisResult> => {
   const response = await fetch("/api/analyze", {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
+    headers: getAuthHeaders(),
     body: JSON.stringify({
       text,
       useSearch,
@@ -28,13 +83,11 @@ export const analyzeGermanText = async (
   return response.json();
 };
 
-// 2. Generate Speech TTS (Proxied to backend)
+// 2. Generate Speech TTS (Proxied to backend with optional personal API key header)
 export const generateSpeech = async (text: string): Promise<string> => {
   const response = await fetch("/api/speech", {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
+    headers: getAuthHeaders(),
     body: JSON.stringify({ text }),
   });
 
@@ -47,16 +100,14 @@ export const generateSpeech = async (text: string): Promise<string> => {
   return data.audio || "";
 };
 
-// 3. Vocabulary Import Magic (Proxied to backend)
+// 3. Vocabulary Import Magic (Proxied to backend with optional personal API key header)
 export const importVocabularyMagic = async (
   rawText: string,
   targetLang: 'uz' | 'en' | 'ru' = 'uz'
 ): Promise<VocabItem[]> => {
   const response = await fetch("/api/import-magic", {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
+    headers: getAuthHeaders(),
     body: JSON.stringify({ rawText, targetLang }),
   });
 
@@ -68,7 +119,7 @@ export const importVocabularyMagic = async (
   return response.json();
 };
 
-// 4. WebSocket Live speaking session proxy
+// 4. WebSocket Live speaking session proxy with optional user API key parameter
 export const connectLiveSession = async (callbacks: {
   onopen: () => void;
   onmessage: (message: any) => Promise<void> | void;
@@ -76,7 +127,9 @@ export const connectLiveSession = async (callbacks: {
   onclose: (e: any) => void;
 }) => {
   const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
-  const wsUrl = `${protocol}//${window.location.host}/api/live`;
+  const userApiKey = getUserApiKey();
+  const queryParam = userApiKey ? `?apiKey=${encodeURIComponent(userApiKey)}` : "";
+  const wsUrl = `${protocol}//${window.location.host}/api/live${queryParam}`;
   const ws = new WebSocket(wsUrl);
 
   ws.onopen = callbacks.onopen;
@@ -108,11 +161,10 @@ export const connectLiveSession = async (callbacks: {
   };
 };
 
-// Keep placeholder functions for compatibility with any existing UI state checks
 export const checkApiKeySelection = async (): Promise<boolean> => {
-  return true;
+  return hasUserApiKey();
 };
 
 export const openApiKeySelection = async () => {
-  console.log("Using server-managed backend API key config.");
+  console.log("Using API key management dialog.");
 };

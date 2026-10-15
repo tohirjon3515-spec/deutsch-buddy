@@ -1,7 +1,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { Send, BookOpen, Lightbulb, Volume2, Loader2, PlayCircle, StopCircle, Moon, Sun, Bookmark, BookmarkCheck, Sparkles, Gamepad2, FileText, Check, Search, BrainCircuit, MessageSquare, Info, Maximize, Minimize, Key, ExternalLink, Download, Quote, Languages, HelpCircle, GraduationCap, ClipboardCheck, ArrowRight, Layers, Link2, LogOut, Cloud, History, User as UserIcon, AlertCircle, Award, TrendingUp, BarChart3 } from 'lucide-react';
-import { analyzeGermanText, generateSpeech, checkApiKeySelection, openApiKeySelection } from './services/geminiService';
+import { analyzeGermanText, generateSpeech, checkApiKeySelection, openApiKeySelection, hasUserApiKey } from './services/geminiService';
 import { AnalysisResult, AnalysisStatus, VocabItem, PhraseItem } from './types';
 import { Language, translations } from './translations';
 import VocabTable from './components/VocabTable';
@@ -11,6 +11,7 @@ import ExerciseArena from './components/ExerciseArena';
 import LivePractice from './components/LivePractice';
 import HistoryModal from './components/HistoryModal';
 import ProgressDashboard from './components/ProgressDashboard';
+import ApiKeyModal from './components/ApiKeyModal';
 import {
   auth,
   signInWithGoogle,
@@ -90,6 +91,8 @@ const App: React.FC = () => {
   const [isSavedModalOpen, setIsSavedModalOpen] = useState(false);
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const [isProgressOpen, setIsProgressOpen] = useState(false);
+  const [isApiKeyModalOpen, setIsApiKeyModalOpen] = useState(false);
+  const [hasUserKey, setHasUserKey] = useState<boolean>(() => hasUserApiKey());
   const [historyList, setHistoryList] = useState<HistoryRecord[]>([]);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [isAuthLoading, setIsAuthLoading] = useState(true);
@@ -267,10 +270,24 @@ const App: React.FC = () => {
   const handleGoogleSignIn = async () => {
     try {
       setIsAuthLoading(true);
+      setError(null);
       await signInWithGoogle();
     } catch (err: any) {
       console.error("Sign-in error:", err);
-      setError("Sign-in was cancelled or encountered an issue.");
+      if (err?.code === 'auth/popup-closed-by-user') {
+        return;
+      }
+      if (err?.code === 'auth/unauthorized-domain') {
+        setError(
+          language === 'uz'
+            ? "Firebase loyihasi yangilandi. Iltimos, sahifani yangilab qayta urinib ko'ring."
+            : "Firebase configuration updated. Please refresh the page and try again."
+        );
+      } else {
+        setError(
+          err?.message || (language === 'uz' ? "Google orqali kirishda xatolik yuz berdi." : "Failed to sign in with Google.")
+        );
+      }
     } finally {
       setIsAuthLoading(false);
     }
@@ -640,8 +657,28 @@ const App: React.FC = () => {
               </button>
             </div>
 
-            {/* Display / Theme Toggles */}
-            <div className="flex items-center">
+            {/* Display / Theme / API Key Toggles */}
+            <div className="flex items-center gap-1">
+              <button
+                type="button"
+                onClick={() => setIsApiKeyModalOpen(true)}
+                className={`relative p-1.5 sm:p-2 rounded-xl transition-all ${
+                  hasUserKey
+                    ? 'text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 border border-emerald-200 dark:border-emerald-800'
+                    : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'
+                }`}
+                title={
+                  hasUserKey
+                    ? (language === 'uz' ? "✓ Shaxsiy API kalitingiz faol" : language === 'ru' ? "✓ Личный API-ключ активен" : "✓ Personal API key active")
+                    : (language === 'uz' ? "Shaxsiy Gemini API kalitini kiritish" : language === 'ru' ? "Ввести личный API-ключ Gemini" : "Enter personal Gemini API key")
+                }
+              >
+                <Key className="w-4 h-4" />
+                {hasUserKey && (
+                  <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-emerald-500 ring-2 ring-white dark:ring-slate-900" />
+                )}
+              </button>
+
               <button
                 onClick={toggleFullscreen}
                 className="hidden sm:flex p-1.5 sm:p-2 text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors"
@@ -818,13 +855,24 @@ const App: React.FC = () => {
                     <p className="text-sm opacity-90 mt-0.5">{error}</p>
                   </div>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => handleAnalyze()}
-                  className="px-3.5 py-1.5 bg-rose-600 hover:bg-rose-700 active:scale-95 text-white rounded-xl text-xs font-bold transition-all shadow-sm flex-shrink-0"
-                >
-                  {language === 'uz' ? 'Qayta urinish' : 'Retry'}
-                </button>
+                <div className="flex items-center gap-2 flex-shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => setIsApiKeyModalOpen(true)}
+                    className="px-3 py-1.5 bg-amber-500 hover:bg-amber-600 active:scale-95 text-white rounded-xl text-xs font-bold transition-all shadow-sm flex items-center gap-1.5"
+                    title={language === 'uz' ? "Shaxsiy API kalitini kiritish" : "Enter API key"}
+                  >
+                    <Key className="w-3.5 h-3.5" />
+                    <span>{language === 'uz' ? "API Kalit" : language === 'ru' ? "API Ключ" : "API Key"}</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleAnalyze()}
+                    className="px-3.5 py-1.5 bg-rose-600 hover:bg-rose-700 active:scale-95 text-white rounded-xl text-xs font-bold transition-all shadow-sm"
+                  >
+                    {language === 'uz' ? 'Qayta urinish' : 'Retry'}
+                  </button>
+                </div>
               </div>
             )}
           </div>
@@ -1122,6 +1170,13 @@ const App: React.FC = () => {
           window.scrollTo({ top: 0, behavior: 'smooth' });
         }}
         onOpenSavedModal={() => setIsSavedModalOpen(true)}
+        language={language}
+      />
+
+      <ApiKeyModal
+        isOpen={isApiKeyModalOpen}
+        onClose={() => setIsApiKeyModalOpen(false)}
+        onKeyChange={(hasKey) => setHasUserKey(hasKey)}
         language={language}
       />
     </div>

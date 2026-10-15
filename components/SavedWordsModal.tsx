@@ -861,15 +861,15 @@ const SavedWordsModal: React.FC<SavedWordsModalProps> = ({
                           onClick={() => toggleSelectWord(item.word)}
                           className={`p-3 sm:p-4 rounded-2xl border transition-all duration-200 shadow-sm cursor-pointer ${
                             isSelected 
-                              ? 'bg-indigo-50/70 dark:bg-indigo-950/30 border-indigo-300 dark:border-indigo-700' 
-                              : 'bg-slate-50/70 dark:bg-slate-850 hover:bg-white dark:hover:bg-slate-800 border-slate-200/80 dark:border-slate-800'
+                              ? 'bg-indigo-50/80 dark:bg-indigo-950/40 border-indigo-300 dark:border-indigo-600' 
+                              : 'bg-slate-50/80 dark:bg-slate-800/60 hover:bg-white dark:hover:bg-slate-800 border-slate-200/80 dark:border-slate-700/80'
                           }`}
                         >
                           <div className="flex items-start justify-between gap-3">
                             {/* Checkbox */}
-                            <div className="pt-0.5 shrink-0 text-slate-400">
+                            <div className="pt-0.5 shrink-0 text-slate-400 dark:text-slate-500">
                               {isSelected ? (
-                                <CheckSquare className="w-4 h-4 text-indigo-600" />
+                                <CheckSquare className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
                               ) : (
                                 <Square className="w-4 h-4 hover:text-indigo-500" />
                               )}
@@ -884,29 +884,29 @@ const SavedWordsModal: React.FC<SavedWordsModalProps> = ({
                                   {articleBadge.text}
                                 </span>
                                 {item.difficulty === 'hard' && (
-                                  <span className="text-[9px] font-black text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/60 px-1.5 py-0.5 rounded-full border border-rose-200 dark:border-rose-900/40">
+                                  <span className="text-[9px] font-black text-rose-600 dark:text-rose-300 bg-rose-50 dark:bg-rose-950/60 px-1.5 py-0.5 rounded-full border border-rose-200 dark:border-rose-900/50">
                                     {language === 'uz' ? 'QIYIN' : 'HARD'}
                                   </span>
                                 )}
                                 {item.difficulty === 'easy' && (
-                                  <span className="text-[9px] font-black text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 px-1.5 py-0.5 rounded-full border border-emerald-200 dark:border-emerald-900/40">
+                                  <span className="text-[9px] font-black text-emerald-600 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/60 px-1.5 py-0.5 rounded-full border border-emerald-200 dark:border-emerald-900/50">
                                     {language === 'uz' ? 'OSON' : 'EASY'}
                                   </span>
                                 )}
                               </div>
                               
-                              <p className="text-sm font-semibold text-indigo-700 dark:text-indigo-400 mb-1">
+                              <p className="text-sm font-semibold text-indigo-700 dark:text-indigo-300 mb-1">
                                 {item.meaning}
                               </p>
 
                               {item.grammarForms && (
-                                <p className="text-xs font-mono text-slate-500 dark:text-slate-400">
+                                <p className="text-xs font-mono text-slate-500 dark:text-slate-300">
                                   {item.grammarForms}
                                 </p>
                               )}
 
                               {item.contextSentence && (
-                                <p className="text-xs text-slate-500 dark:text-slate-400 italic mt-1.5 line-clamp-2 border-l-2 border-indigo-400 pl-2">
+                                <p className="text-xs text-slate-600 dark:text-slate-300 italic mt-1.5 line-clamp-2 border-l-2 border-indigo-500 pl-2">
                                   "{item.contextSentence}"
                                 </p>
                               )}
@@ -914,13 +914,13 @@ const SavedWordsModal: React.FC<SavedWordsModalProps> = ({
 
                             {/* Card Actions: Easy/Hard toggle & Delete */}
                             <div className="flex items-center gap-1 shrink-0 self-center" onClick={(e) => e.stopPropagation()}>
-                              <div className="flex bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-0.5 shadow-sm">
+                              <div className="flex bg-white dark:bg-slate-900/80 rounded-xl border border-slate-200 dark:border-slate-700 p-0.5 shadow-sm">
                                 <button 
                                   onClick={() => onUpdateWord(item.word, { difficulty: item.difficulty === 'easy' ? undefined : 'easy' })} 
                                   className={`p-1.5 rounded-lg transition-colors ${
                                     item.difficulty === 'easy' 
                                       ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300' 
-                                      : 'text-slate-400 hover:text-emerald-600'
+                                      : 'text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-400'
                                   }`} 
                                   title="Mark as Easy"
                                 >
@@ -931,7 +931,7 @@ const SavedWordsModal: React.FC<SavedWordsModalProps> = ({
                                   className={`p-1.5 rounded-lg transition-colors ${
                                     item.difficulty === 'hard' 
                                       ? 'bg-rose-100 text-rose-700 dark:bg-rose-950 dark:text-rose-300' 
-                                      : 'text-slate-400 hover:text-rose-600'
+                                      : 'text-slate-400 hover:text-rose-600 dark:hover:text-rose-400'
                                   }`} 
                                   title="Mark as Hard"
                                 >
@@ -941,7 +941,7 @@ const SavedWordsModal: React.FC<SavedWordsModalProps> = ({
 
                               <button 
                                 onClick={() => onRemove(item.word)} 
-                                className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-xl transition-colors"
+                                className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 dark:hover:text-rose-400 rounded-xl transition-colors"
                                 title="Delete"
                               >
                                 <Trash2 className="w-4 h-4" />
@@ -960,15 +960,15 @@ const SavedWordsModal: React.FC<SavedWordsModalProps> = ({
                           onClick={() => toggleSelectPhrase(item.phrase)}
                           className={`p-3 sm:p-4 rounded-2xl border transition-all duration-200 shadow-sm cursor-pointer ${
                             isSelected 
-                              ? 'bg-indigo-50/70 dark:bg-indigo-950/30 border-indigo-300 dark:border-indigo-700' 
-                              : 'bg-slate-50/70 dark:bg-slate-850 hover:bg-white dark:hover:bg-slate-800 border-slate-200/80 dark:border-slate-800'
+                              ? 'bg-indigo-50/80 dark:bg-indigo-950/40 border-indigo-300 dark:border-indigo-600' 
+                              : 'bg-slate-50/80 dark:bg-slate-800/60 hover:bg-white dark:hover:bg-slate-800 border-slate-200/80 dark:border-slate-700/80'
                           }`}
                         >
                           <div className="flex items-start justify-between gap-3 mb-1">
                             <div className="flex items-center gap-2">
-                              <div className="text-slate-400">
+                              <div className="text-slate-400 dark:text-slate-500">
                                 {isSelected ? (
-                                  <CheckSquare className="w-4 h-4 text-indigo-600" />
+                                  <CheckSquare className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
                                 ) : (
                                   <Square className="w-4 h-4 hover:text-indigo-500" />
                                 )}
@@ -980,26 +980,26 @@ const SavedWordsModal: React.FC<SavedWordsModalProps> = ({
 
                             <button 
                               onClick={(e) => { e.stopPropagation(); onRemovePhrase(item.phrase); }} 
-                              className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-xl transition-colors shrink-0"
+                              className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 dark:hover:text-rose-400 rounded-xl transition-colors shrink-0"
                               title="Delete"
                             >
                               <Trash2 className="w-4 h-4" />
                             </button>
                           </div>
                           
-                          <p className="text-sm font-semibold text-indigo-700 dark:text-indigo-400 mb-1 pl-6">
+                          <p className="text-sm font-semibold text-indigo-700 dark:text-indigo-300 mb-1 pl-6">
                             {item.actualMeaning}
                           </p>
 
                           {item.literalTranslation && (
-                            <p className="text-xs text-slate-500 dark:text-slate-400 italic mb-1 pl-6">
+                            <p className="text-xs text-slate-500 dark:text-slate-300 italic mb-1 pl-6">
                               {language === 'uz' ? "So'zma-so'z: " : "Literal: "}
                               "{item.literalTranslation}"
                             </p>
                           )}
 
                           {item.exampleSentence && (
-                            <p className="text-xs text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-800/60 p-2 rounded-xl mt-2 border border-slate-200/60 dark:border-slate-700/60 ml-6">
+                            <p className="text-xs text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-900/60 p-2 rounded-xl mt-2 border border-slate-200/60 dark:border-slate-700/60 ml-6">
                               "{item.exampleSentence}"
                             </p>
                           )}
@@ -1014,7 +1014,7 @@ const SavedWordsModal: React.FC<SavedWordsModalProps> = ({
         </div>
 
         {/* Modal Footer */}
-        <div className="px-4 sm:px-6 py-3 border-t border-slate-100 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-850/80 flex items-center justify-between gap-3 shrink-0">
+        <div className="px-4 sm:px-6 py-3 border-t border-slate-100 dark:border-slate-800 bg-slate-50/90 dark:bg-slate-900/95 flex items-center justify-between gap-3 shrink-0">
           {showClearConfirm ? (
             <div className="flex items-center gap-2 animate-in fade-in">
               <span className="text-xs font-bold text-rose-600 dark:text-rose-400">

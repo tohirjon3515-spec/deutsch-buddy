@@ -12,15 +12,27 @@ const wss = new WebSocketServer({ noServer: true });
 // Parse JSON bodies up to 10MB
 app.use(express.json({ limit: "10mb" }));
 
-// Lazy getter for Google GenAI to prevent crash during server startup if key is missing
-let aiInstance: GoogleGenAI | null = null;
-function getAI(): GoogleGenAI {
-  if (!aiInstance) {
+// Getter for Google GenAI: uses user-provided API key from header if present, else falls back to server env
+let defaultAiInstance: GoogleGenAI | null = null;
+function getAI(userApiKey?: string): GoogleGenAI {
+  const customKey = userApiKey && typeof userApiKey === "string" ? userApiKey.trim() : "";
+  if (customKey) {
+    return new GoogleGenAI({
+      apiKey: customKey,
+      httpOptions: {
+        headers: {
+          "User-Agent": "deutschbuddy-user-key",
+        },
+      },
+    });
+  }
+
+  if (!defaultAiInstance) {
     const apiKey = process.env.GEMINI_API_KEY;
     if (!apiKey) {
-      throw new Error("GEMINI_API_KEY environment variable is not set on the server.");
+      throw new Error("GEMINI_API_KEY environment variable is not set on the server and no x-user-api-key was provided.");
     }
-    aiInstance = new GoogleGenAI({
+    defaultAiInstance = new GoogleGenAI({
       apiKey,
       httpOptions: {
         headers: {
@@ -29,7 +41,7 @@ function getAI(): GoogleGenAI {
       },
     });
   }
-  return aiInstance;
+  return defaultAiInstance;
 }
 
 // JSON Schema for the structured German analysis output
@@ -133,8 +145,9 @@ async function generateContentWithRetry(options: {
   fallbackModels?: string[];
   contents: any;
   config?: any;
+  apiKey?: string;
 }) {
-  const ai = getAI();
+  const ai = getAI(options.apiKey);
   const modelsToTry = Array.from(new Set([options.model, ...(options.fallbackModels || [])]));
   let lastError: any = null;
 
@@ -219,6 +232,7 @@ async function generateContentWithRetry(options: {
 // 1. Analyze German Text
 app.post("/api/analyze", async (req: express.Request, res: express.Response) => {
   try {
+    const userApiKey = (req.headers["x-user-api-key"] as string) || undefined;
     const { text, useSearch, useThinking, targetLang } = req.body;
     if (!text || typeof text !== "string") {
       return res.status(400).json({ error: "Text is required" });
@@ -362,6 +376,7 @@ app.post("/api/analyze", async (req: express.Request, res: express.Response) => 
       fallbackModels,
       contents: prompt,
       config,
+      apiKey: userApiKey,
     });
 
     const result = JSON.parse(response.text || "{}");
@@ -396,12 +411,14 @@ const audioCache = new Map<string, string>();
 // 2. Generate Speech TTS
 app.post("/api/speech", async (req: express.Request, res: express.Response) => {
   try {
+    const userApiKey = (req.headers["x-user-api-key"] as string) || undefined;
     const { text } = req.body;
     if (!text || typeof text !== "string") {
       return res.status(400).json({ error: "Text is required" });
     }
 
     const trimmed = text.trim();
+    // Cache key incorporates key ownership prefix if using custom key or standard cache
     if (audioCache.has(trimmed)) {
       return res.json({ audio: audioCache.get(trimmed) });
     }
@@ -418,6 +435,7 @@ app.post("/api/speech", async (req: express.Request, res: express.Response) => {
           },
         },
       },
+      apiKey: userApiKey,
     });
 
     const base64Audio = response.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data || "";
@@ -438,6 +456,7 @@ app.post("/api/speech", async (req: express.Request, res: express.Response) => {
 // 3. Vocabulary Import Magic
 app.post("/api/import-magic", async (req: express.Request, res: express.Response) => {
   try {
+    const userApiKey = (req.headers["x-user-api-key"] as string) || undefined;
     const { rawText, targetLang } = req.body;
     if (!rawText) {
       return res.status(400).json({ error: "Raw text is required" });
@@ -474,6 +493,7 @@ app.post("/api/import-magic", async (req: express.Request, res: express.Response
           },
         },
       },
+      apiKey: userApiKey,
     });
 
     const items = JSON.parse(response.text || "[]");
@@ -486,12 +506,31 @@ app.post("/api/import-magic", async (req: express.Request, res: express.Response
 
 // --- WebSocket Setup for Live Real-Time speaking practice ---
 
-wss.on("connection", async (clientWs) => {
+wss.on("connection", async (clientWs, request: any) => {
   console.log("Client connected to server live WebSocket");
   let session: any = null;
 
   try {
-    const ai = getAI();
+    let userApiKey: string | undefined;
+    if (request?.url) {
+      try {
+        const parsedUrl = new URL(request.url, "http://localhost");
+        const qKey = parsedUrl.searchParams.get("apiKey");
+        if (qKey && qKey.trim()) {
+          userApiKey = qKey.trim();
+        }
+      } catch {
+        // ignore
+      }
+    }
+    if (!userApiKey && request?.headers?.["x-user-api-key"]) {
+      const hKey = request.headers["x-user-api-key"];
+      if (typeof hKey === "string" && hKey.trim()) {
+        userApiKey = hKey.trim();
+      }
+    }
+
+    const ai = getAI(userApiKey);
     session = await ai.live.connect({
       model: "gemini-3.8-live",
       config: {
